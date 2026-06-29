@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mega Brain — Hub de Materiais</title>
+<style>
+  :root {
+    --bg: #0A0A0F;
+    --card: #14141F;
+    --border: #2A2A4A;
+    --cyan: #00D4FF;
+    --green: #00FF88;
+    --gold: #FFD700;
+    --purple: #7C5CFC;
+    --red: #FF3355;
+    --text: #E8E8F0;
+    --muted: #6A6A8A;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+  }
+
+  .hero {
+    text-align: center;
+    padding: 80px 20px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.08), transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(124,92,252,0.06), transparent 60%);
+  }
+  .hero h1 {
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 900;
+    background: linear-gradient(135deg, #00D4FF 0%, #7C5CFC 50%, #FFD700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+  }
+  .hero .tagline {
+    color: var(--muted);
+    font-size: 18px;
+    margin-top: 12px;
+    position: relative;
+  }
+  .hero .badges {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid;
+  }
+  .badge-oss { color: var(--green); border-color: rgba(0,255,136,0.3); background: rgba(0,255,136,0.08); }
+  .badge-py  { color: var(--cyan);  border-color: rgba(0,212,255,0.3); background: rgba(0,212,255,0.08); }
+  .badge-multi{ color: var(--purple);border-color: rgba(124,92,252,0.3);background: rgba(124,92,252,0.08); }
+  .badge-live{ color: var(--gold);  border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.08); }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+  /* Section */
+  section { margin-bottom: 72px; }
+  .section-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-desc {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+  .section-line {
+    height: 2px;
+    background: linear-gradient(90deg, var(--cyan), transparent);
+    margin-bottom: 32px;
+  }
+
+  /* Cards */
+  .grid { display: grid; gap: 20px; }
+  .grid-2 { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .grid-4 { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .card:hover {
+    border-color: var(--cyan);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,212,255,0.1);
+  }
+  .card-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+  }
+  .card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .card p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .card .tag-row {
+    display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap;
+  }
+  .card .tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    background: rgba(124,92,252,0.12);
+    color: var(--purple);
+    font-weight: 600;
+  }
+  .card .tag.svg-tag { background: rgba(0,212,255,0.12); color: var(--cyan); }
+  .card .tag.pdf-tag { background: rgba(255,51,85,0.12); color: var(--red); }
+  .card .tag.html-tag{ background: rgba(255,215,0,0.12); color: var(--gold); }
+
+  /* Concept cards (illustrations) */
+  .concept-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+  .concept-card:hover {
+    border-color: var(--cyan);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,212,255,0.1);
+  }
+  .concept-card .preview {
+    background: #0d0d1a;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+  }
+  .concept-card .preview img {
+    max-width: 100%;
+    max-height: 160px;
+    filter: drop-shadow(0 4px 16px rgba(0,212,255,0.15));
+  }
+  .concept-card .info {
+    padding: 16px 20px;
+  }
+  .concept-card .info h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .concept-card .info p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 60px 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .footer a { color: var(--cyan); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    .hero { padding: 48px 16px 32px; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🧠 Mega Brain</h1>
+  <p class="tagline">Hub de Materiais — Ilustrações, Guias, Slides e Documentação Técnica</p>
+  <div class="badges">
+    <span class="badge badge-oss">Open Source MIT</span>
+    <span class="badge badge-py">Python 3.10+</span>
+    <span class="badge badge-multi">Multi-Agente</span>
+    <span class="badge badge-live">LangGraph</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- CONCEITOS ILUSTRADOS -->
+  <section>
+    <h2 class="section-title">🎨 Conceitos Ilustrados</h2>
+    <p class="section-desc">Diagramas SVG explicando os fundamentos de IA e arquitetura multi-agente</p>
+    <div class="section-line"></div>
+
+    <div class="grid grid-3">
+
+      <a class="concept-card" href="../megabrain_v2/ilustracoes/tokenizacao.svg" target="_blank">
+        <div class="preview">
+          <img src="../megabrain_v2/ilustracoes/tokenizacao.svg" alt="Tokenização" loading="lazy">
+        </div>
+        <div class="info">
+          <h3>🔤 Tokenização</h3>
+          <p>Como o texto é quebrado em tokens — as unidades atômicas que os LLMs processam</p>
+        </div>
+      </a>
+
+      <a class="concept-card" href="../megabrain_v2/ilustracoes/embeddings.svg" target="_blank">
+        <div class="preview">
+          <img src="../megabrain_v2/ilustracoes/embeddings.svg" alt="Embeddings" loading="lazy">
+        </div>
+        <div class="info">
+          <h3>📐 Embeddings</h3>
+          <p>Como palavras e frases são transformadas em vetores numéricos de alta dimensão</p>
+        </div>
+      </a>
+
+      <a class="concept-card" href="../megabrain_v2/ilustracoes/espaco_vetorial.svg" target="_blank">
+        <div class="preview">
+          <img src="../megabrain_v2/ilustracoes/espaco_vetorial.svg" alt="Espaço Vetorial" loading="lazy">
+        </div>
+        <div class="info">
+          <h3>🌌 Espaço Vetorial</h3>
+          <p>Visualização do espaço semântico onde conceitos similares ficam próximos</p>
+        </div>
+      </a>
+
+      <a class="concept-card" href="../megabrain_v2/ilustracoes/attention.svg" target="_blank">
+        <div class="preview">
+          <img src="../megabrain_v2/ilustracoes/attention.svg" alt="Attention" loading="lazy">
+        </div>
+        <div class="info">
+          <h3>👁️ Mecanismo de Atenção</h3>
+          <p>O coração dos Transformers — como o modelo decide quais tokens são relevantes</p>
+        </div>
+      </a>
+
+      <a class="concept-card" href="../megabrain_v2/ilustracoes/similarity.svg" target="_blank">
+        <div class="preview">
+          <img src="../megabrain_v2/ilustracoes/similarity.svg" alt="Similaridade" loading="lazy">
+        </div>
+        <div class="info">
+          <h3>📏 Similaridade de Cosseno</h3>
+          <p>Métrica usada para comparar embeddings e encontrar textos semanticamente próximos</p>
+        </div>
+      </a>
+
+      <a class="concept-card" href="../megabrain_v2/ilustracoes/rag.svg" target="_blank">
+        <div class="preview">
+          <img src="../megabrain_v2/ilustracoes/rag.svg" alt="RAG" loading="lazy">
+        </div>
+        <div class="info">
+          <h3>🔍 RAG (Retrieval-Augmented Generation)</h3>
+          <p>Como combinar busca em base de conhecimento com geração LLM para respostas fundamentadas</p>
+        </div>
+      </a>
+
+      <a class="concept-card" href="../megabrain_v2/ilustracoes/tool_calling.svg" target="_blank">
+        <div class="preview">
+          <img src="../megabrain_v2/ilustracoes/tool_calling.svg" alt="Tool Calling" loading="lazy">
+        </div>
+        <div class="info">
+          <h3>🔧 Tool Calling</h3>
+          <p>Como agentes de IA invocam funções externas — APIs, calculadoras, busca web</p>
+        </div>
+      </a>
+
+      <a class="concept-card" href="../megabrain_v2/ilustracoes/agent_loop.svg" target="_blank">
+        <div class="preview">
+          <img src="../megabrain_v2/ilustracoes/agent_loop.svg" alt="Agent Loop" loading="lazy">
+        </div>
+        <div class="info">
+          <h3>🔄 Agent Loop</h3>
+          <p>O ciclo de raciocínio: observar → pensar → agir → observar, até completar a tarefa</p>
+        </div>
+      </a>
+
+      <a class="concept-card" href="../megabrain_v2/ilustracoes/langgraph_flow.svg" target="_blank">
+        <div class="preview">
+          <img src="../megabrain_v2/ilustracoes/langgraph_flow.svg" alt="LangGraph Flow" loading="lazy">
+        </div>
+        <div class="info">
+          <h3>🧭 Fluxo LangGraph</h3>
+          <p>StateGraph com nós e arestas — cada nó é uma função, cada aresta é uma transição</p>
+        </div>
+      </a>
+
+      <a class="concept-card" href="../megabrain_v2/ilustracoes/multi_agent_parallel.svg" target="_blank">
+        <div class="preview">
+          <img src="../megabrain_v2/ilustracoes/multi_agent_parallel.svg" alt="Multi-Agente Paralelo" loading="lazy">
+        </div>
+        <div class="info">
+          <h3>⚡ Multi-Agente Paralelo</h3>
+          <p>Squad de agentes especializados executando em paralelo, com consolidação centralizada</p>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- GUIAS EM PDF -->
+  <section>
+    <h2 class="section-title">📚 Guias e Apostilas (PDF)</h2>
+    <p class="section-desc">Material didático passo a passo para construir sistemas multi-agente</p>
+    <div class="section-line"></div>
+
+    <div class="grid grid-2">
+
+      <a class="card" href="../megabrain_v2/guias/01-setup-langchain.pdf" target="_blank">
+        <div class="card-icon">⚙️</div>
+        <h3>Guia 01 — Setup LangChain</h3>
+        <p>Ambiente, dependências, configuração de API keys e primeiros passos com LangChain no Python</p>
+        <div class="tag-row">
+          <span class="tag pdf-tag">PDF</span>
+          <span class="tag">LangChain</span>
+          <span class="tag">Setup</span>
+        </div>
+      </a>
+
+      <a class="card" href="../megabrain_v2/guias/02-primeiro-projeto.pdf" target="_blank">
+        <div class="card-icon">🚀</div>
+        <h3>Guia 02 — Primeiro Projeto</h3>
+        <p>Construa seu primeiro pipeline com chains, prompts e memória de conversação</p>
+        <div class="tag-row">
+          <span class="tag pdf-tag">PDF</span>
+          <span class="tag">Chains</span>
+          <span class="tag">Prompts</span>
+        </div>
+      </a>
+
+      <a class="card" href="../megabrain_v2/guias/03-langgraph-intro.pdf" target="_blank">
+        <div class="card-icon">🧭</div>
+        <h3>Guia 03 — Introdução ao LangGraph</h3>
+        <p>StateGraph, nós, arestas condicionais, roteamento e orquestração com estado</p>
+        <div class="tag-row">
+          <span class="tag pdf-tag">PDF</span>
+          <span class="tag">LangGraph</span>
+          <span class="tag">StateGraph</span>
+        </div>
+      </a>
+
+      <a class="card" href="../megabrain_v2/guias/CafeComDados-5-MegaBrain-v2.pdf" target="_blank">
+        <div class="card-icon">☕</div>
+        <h3>Café com Dados #5 — Mega Brain v2</h3>
+        <p>Apresentação completa da live: arquitetura, LangGraph, multi-agente e demo ao vivo</p>
+        <div class="tag-row">
+          <span class="tag pdf-tag">PDF</span>
+          <span class="tag">Live</span>
+          <span class="tag">Apresentação</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- APRESENTAÇÕES -->
+  <section>
+    <h2 class="section-title">📽️ Apresentações Interativas</h2>
+    <p class="section-desc">Slides HTML com navegação por teclado, dark mode e gráficos</p>
+    <div class="section-line"></div>
+
+    <div class="grid grid-2">
+
+      <a class="card" href="../slides-mega-brain.html" target="_blank">
+        <div class="card-icon">🧠</div>
+        <h3>Slides: Arquitetura Mega Brain</h3>
+        <p>16 slides. Arquitetura, roteamento inteligente, Copy Chief Squad, demonstração técnica e comparação de mercado</p>
+        <div class="tag-row">
+          <span class="tag html-tag">HTML</span>
+          <span class="tag">Arquitetura</span>
+          <span class="tag">Router</span>
+        </div>
+      </a>
+
+      <a class="card" href="../slides-cafe-dados.html" target="_blank">
+        <div class="card-icon">📊</div>
+        <h3>Slides: Café com Dados #5</h3>
+        <p>Apresentação interativa com Chart.js. Construindo um Mega Brain com IA do zero</p>
+        <div class="tag-row">
+          <span class="tag html-tag">HTML + Chart.js</span>
+          <span class="tag">Live Coding</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- DEMOS E DASHBOARD -->
+  <section>
+    <h2 class="section-title">🖥️ Demos e Dashboards</h2>
+    <p class="section-desc">Interfaces interativas para visualizar e testar o sistema</p>
+    <div class="section-line"></div>
+
+    <div class="grid grid-3">
+
+      <a class="card" href="../dashboard/index.html" target="_blank">
+        <div class="card-icon">🤖</div>
+        <h3>Dashboard J.A.R.V.I.S.</h3>
+        <p>Interface completa com chat, entrada de voz, upload de arquivos e WebSocket em tempo real. Tema escuro inspirado em J.A.R.V.I.S.</p>
+        <div class="tag-row">
+          <span class="tag html-tag">SPA</span>
+          <span class="tag">WebSocket</span>
+          <span class="tag">Pixi.js</span>
+        </div>
+      </a>
+
+      <a class="card" href="../dashboard/intro.html" target="_blank">
+        <div class="card-icon">🎬</div>
+        <h3>Tela de Intro</h3>
+        <p>Landing screen com animação "J.A.R.V.I.S. online" e entrada de voz para ativação do sistema</p>
+        <div class="tag-row">
+          <span class="tag html-tag">HTML</span>
+          <span class="tag">Animação</span>
+        </div>
+      </a>
+
+      <a class="card" href="../megabrain_v2/grafo.html" target="_blank">
+        <div class="card-icon">🔀</div>
+        <h3>Visualizador do Grafo v2</h3>
+        <p>Diagrama interativo do StateGraph do LangGraph: nós, arestas e fluxo de decisão</p>
+        <div class="tag-row">
+          <span class="tag html-tag">HTML</span>
+          <span class="tag">LangGraph</span>
+        </div>
+      </a>
+
+      <a class="card" href="../megabrain_v2/demo.html" target="_blank">
+        <div class="card-icon">🧪</div>
+        <h3>Demo Interativa v2</h3>
+        <p>Teste o roteamento inteligente com diferentes níveis de complexidade em tempo real</p>
+        <div class="tag-row">
+          <span class="tag html-tag">HTML</span>
+          <span class="tag">Demo</span>
+        </div>
+      </a>
+
+      <a class="card" href="../megabrain_v2/studio.html" target="_blank">
+        <div class="card-icon">🎛️</div>
+        <h3>LangGraph Studio</h3>
+        <p>Interface para inspecionar e depurar o StateGraph durante a execução</p>
+        <div class="tag-row">
+          <span class="tag html-tag">HTML</span>
+          <span class="tag">Debug</span>
+        </div>
+      </a>
+
+      <a class="card" href="../megabrain_v2/ilustracoes/galeria.html" target="_blank">
+        <div class="card-icon">🖼️</div>
+        <h3>Galeria de Ilustrações</h3>
+        <p>Visualização em grid de todas as ilustrações SVG com explicações detalhadas</p>
+        <div class="tag-row">
+          <span class="tag html-tag">HTML</span>
+          <span class="tag">Galeria</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ROTEIRO E DOCS -->
+  <section>
+    <h2 class="section-title">📝 Documentação e Roteiro</h2>
+    <p class="section-desc">Documentos de referência para criadores de conteúdo e devs</p>
+    <div class="section-line"></div>
+
+    <div class="grid grid-2">
+
+      <a class="card" href="../roteiro-mega-brain.md" target="_blank">
+        <div class="card-icon">🎬</div>
+        <h3>Roteiro para Vídeo YouTube</h3>
+        <p>Script completo (~17 min) analisando tecnicamente o Mega Brain. Timestamps, visuais, tabelas de comparação e argumentário</p>
+        <div class="tag-row">
+          <span class="tag">Markdown</span>
+          <span class="tag">YouTube</span>
+          <span class="tag">Roteiro</span>
+        </div>
+      </a>
+
+      <a class="card" href="../README.md" target="_blank">
+        <div class="card-icon">📖</div>
+        <h3>README do Projeto</h3>
+        <p>Documentação completa: arquitetura, quick start, Copy Chief Squad, comparação de mercado e estrutura do projeto</p>
+        <div class="tag-row">
+          <span class="tag">Markdown</span>
+          <span class="tag">Docs</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- CÓDIGO FONTE -->
+  <section>
+    <h2 class="section-title">💻 Código Fonte</h2>
+    <p class="section-desc">Navegue pelo código que faz tudo funcionar</p>
+    <div class="section-line"></div>
+
+    <div class="grid grid-4">
+
+      <a class="card" href="https://github.com/generalrodolfao/mega-brain" target="_blank">
+        <div class="card-icon">🐙</div>
+        <h3>Repositório GitHub</h3>
+        <p>Código completo, issues, PRs e releases</p>
+        <div class="tag-row">
+          <span class="tag">GitHub</span>
+        </div>
+      </a>
+
+      <a class="card" href="https://github.com/generalrodolfao/mega-brain/blob/main/main.py" target="_blank">
+        <div class="card-icon">🐍</div>
+        <h3>Entry Point (main.py)</h3>
+        <p>CLI interativa com modos: server, demo, route e voice</p>
+        <div class="tag-row">
+          <span class="tag">Python</span>
+        </div>
+      </a>
+
+      <a class="card" href="https://github.com/generalrodolfao/mega-brain/blob/main/core/router.py" target="_blank">
+        <div class="card-icon">🔀</div>
+        <h3>Router (core/router.py)</h3>
+        <p>Roteamento inteligente com análise de sentimento e seleção de modelo</p>
+        <div class="tag-row">
+          <span class="tag">Python</span>
+        </div>
+      </a>
+
+      <a class="card" href="https://github.com/generalrodolfao/mega-brain/blob/main/megabrain_v2/graph.py" target="_blank">
+        <div class="card-icon">🧭</div>
+        <h3>LangGraph v2 (graph.py)</h3>
+        <p>StateGraph com nós de análise, roteamento e squad paralelo</p>
+        <div class="tag-row">
+          <span class="tag">Python</span>
+          <span class="tag">LangGraph</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+</div>
+
+<footer class="footer">
+  <p>🧠 Mega Brain — <a href="https://github.com/generalrodolfao/mega-brain" target="_blank">github.com/generalrodolfao/mega-brain</a></p>
+  <p style="margin-top:4px">MIT License · A mágica é arquitetura, não feitiço.</p>
+</footer>
+
+</body>
+</html>
