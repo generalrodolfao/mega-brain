@@ -196,7 +196,6 @@ mega-brain/
 │           ├── seo-media.yaml
 │           └── reviewer.yaml
 │
-├── roteiro-mega-brain.md        # Roteiro para vídeo YouTube
 ├── slides-mega-brain.html       # Apresentação de slides (arquitetura)
 ├── slides-cafe-dados.html       # Apresentação "Café com Dados #5"
 │
@@ -226,9 +225,6 @@ mega-brain/
 
 ## 📚 Documentos
 
-### Roteiro para Vídeo
-- **[roteiro-mega-brain.md](roteiro-mega-brain.md)** — Roteiro completo para vídeo YouTube (~17 min), analisando tecnicamente o Mega Brain do Thiago Finch. Inclui timestamps, visuais, comparações e argumentário.
-
 ### Apresentações
 - **[slides-mega-brain.html](slides-mega-brain.html)** — 16 slides em dark mode com navegação por teclado. Arquitetura, demonstração técnica, comparação de mercado.
 - **[slides-cafe-dados.html](slides-cafe-dados.html)** — Apresentação "Café com Dados #5: Construindo um Mega Brain com IA". Slides interativos com Chart.js para palestras e meetups.
@@ -243,20 +239,7 @@ mega-brain/
 
 ---
 
-## 🎥 Para Criadores de Conteúdo
 
-Este repositório foi projetado para ser usado em vídeos de análise técnica:
-
-1. **Roteiro completo** em [roteiro-mega-brain.md](roteiro-mega-brain.md) (~17 min de vídeo)
-2. **Slides** em [slides-mega-brain.html](slides-mega-brain.html) (16 slides, dark mode, navegação por teclado)
-3. **Demo ao vivo** com `python main.py demo`
-4. **Dashboard animado** com `python main.py server`
-
----
-
-## 📜 Licença
-
-MIT — use, modifique, venda o serviço, não o hype.
 
 ---
 
