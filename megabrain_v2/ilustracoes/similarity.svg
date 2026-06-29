@@ -1,0 +1,125 @@
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <style>
+      .title { font-family: 'Arial', sans-serif; font-size: 24px; font-weight: bold; fill: #FFFFFF; text-anchor: middle; }
+      .axis-label { font-family: 'Arial', sans-serif; font-size: 14px; fill: #CCCCCC; text-anchor: middle; }
+      .formula { font-family: 'Arial', sans-serif; font-size: 16px; fill: #FFFFFF; text-anchor: middle; }
+      .example-label { font-family: 'Arial', sans-serif; font-size: 12px; fill: #FFFFFF; text-anchor: middle; }
+      .vector-label { font-family: 'Arial', sans-serif; font-size: 12px; fill: #FFFFFF; }
+      .angle-label { font-family: 'Arial', sans-serif; font-size: 11px; fill: #FFAA00; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#CCCCCC" />
+    </marker>
+    <marker id="green-arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#00FF88" />
+    </marker>
+    <marker id="yellow-arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#FFAA00" />
+    </marker>
+    <marker id="red-arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#FF4444" />
+    </marker>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="500" fill="#0A0A0F"/>
+  
+  <!-- Title -->
+  <text x="400" y="30" class="title">Similaridade de Cosseno em LLMs</text>
+  
+  <!-- Formula -->
+  <text x="400" y="60" class="formula">cos(θ) = (A·B) / (|A|·|B|)</text>
+  
+  <!-- Main coordinate system -->
+  <g transform="translate(150, 200)">
+    <!-- Axes -->
+    <line x1="-80" y1="0" x2="120" y2="0" stroke="#CCCCCC" stroke-width="1" marker-end="url(#arrowhead)"/>
+    <line x1="0" y1="80" x2="0" y2="-120" stroke="#CCCCCC" stroke-width="1" marker-end="url(#arrowhead)"/>
+    
+    <!-- Grid -->
+    <g stroke="#333333" stroke-width="0.5" opacity="0.3">
+      <line x1="-80" y1="-40" x2="120" y2="-40"/>
+      <line x1="-80" y1="-80" x2="120" y2="-80"/>
+      <line x1="-80" y1="40" x2="120" y2="40"/>
+      <line x1="-40" y1="80" x2="-40" y2="-120"/>
+      <line x1="40" y1="80" x2="40" y2="-120"/>
+      <line x1="80" y1="80" x2="80" y2="-120"/>
+    </g>
+    
+    <!-- Vector A (green example) -->
+    <line x1="0" y1="0" x2="80" y2="-60" stroke="#00FF88" stroke-width="3" marker-end="url(#green-arrow)"/>
+    <text x="85" y="-55" class="vector-label" fill="#00FF88">A</text>
+    
+    <!-- Vector B (green example) -->
+    <line x1="0" y1="0" x2="60" y2="-80" stroke="#00FF88" stroke-width="3" marker-end="url(#green-arrow)"/>
+    <text x="65" y="-85" class="vector-label" fill="#00FF88">B</text>
+    
+    <!-- Angle arc (green) -->
+    <path d="M 20 0 A 20 20 0 0 0 15 -25" stroke="#00FF88" stroke-width="2" fill="none"/>
+    <text x="25" y="-15" class="angle-label" fill="#00FF88">θ ≈ 30°</text>
+  </g>
+  
+  <!-- Example 1: Similar vectors -->
+  <g transform="translate(150, 350)">
+    <text x="0" y="-20" class="example-label" fill="#00FF88">Vetores Similares</text>
+    <text x="0" y="-5" class="example-label" fill="#00FF88">cos(θ) ≈ 0.87</text>
+    <text x="0" y="10" class="example-label">"gato" ↔ "felino"</text>
+  </g>
+  
+  <!-- Example 2: Orthogonal vectors -->
+  <g transform="translate(400, 200)">
+    <!-- Axes -->
+    <line x1="-40" y1="0" x2="80" y2="0" stroke="#CCCCCC" stroke-width="1" marker-end="url(#arrowhead)"/>
+    <line x1="0" y1="40" x2="0" y2="-80" stroke="#CCCCCC" stroke-width="1" marker-end="url(#arrowhead)"/>
+    
+    <!-- Vector A (yellow example) -->
+    <line x1="0" y1="0" x2="60" y2="0" stroke="#FFAA00" stroke-width="3" marker-end="url(#yellow-arrow)"/>
+    <text x="65" y="5" class="vector-label" fill="#FFAA00">A</text>
+    
+    <!-- Vector B (yellow example) -->
+    <line x1="0" y1="0" x2="0" y2="-60" stroke="#FFAA00" stroke-width="3" marker-end="url(#yellow-arrow)"/>
+    <text x="5" y="-65" class="vector-label" fill="#FFAA00">B</text>
+    
+    <!-- Right angle indicator -->
+    <path d="M 15 0 L 15 -15 L 0 -15" stroke="#FFAA00" stroke-width="2" fill="none"/>
+    <text x="20" y="-10" class="angle-label" fill="#FFAA00">θ = 90°</text>
+    
+    <!-- Label -->
+    <text x="0" y="70" class="example-label" fill="#FFAA00">Vetores Não Relacionados</text>
+    <text x="0" y="85" class="example-label" fill="#FFAA00">cos(θ) = 0</text>
+    <text x="0" y="100" class="example-label">"gato" ↔ "matemática"</text>
+  </g>
+  
+  <!-- Example 3: Opposite vectors -->
+  <g transform="translate(650, 200)">
+    <!-- Axes -->
+    <line x1="-80" y1="0" x2="40" y2="0" stroke="#CCCCCC" stroke-width="1" marker-end="url(#arrowhead)"/>
+    <line x1="0" y1="40" x2="0" y2="-40" stroke="#CCCCCC" stroke-width="1" marker-end="url(#arrowhead)"/>
+    
+    <!-- Vector A (red example) -->
+    <line x1="0" y1="0" x2="30" y2="0" stroke="#FF4444" stroke-width="3" marker-end="url(#red-arrow)"/>
+    <text x="35" y="5" class="vector-label" fill="#FF4444">A</text>
+    
+    <!-- Vector B (red example) -->
+    <line x1="0" y1="0" x2="-60" y2="0" stroke="#FF4444" stroke-width="3" marker-end="url(#red-arrow)"/>
+    <text x="-70" y="5" class="vector-label" fill="#FF4444">B</text>
+    
+    <!-- Angle arc (red) -->
+    <path d="M 15 0 A 15 15 0 1 0 -15 0" stroke="#FF4444" stroke-width="2" fill="none"/>
+    <text x="0" y="-25" class="angle-label" fill="#FF4444">θ = 180°</text>
+    
+    <!-- Label -->
+    <text x="0" y="70" class="example-label" fill="#FF4444">Vetores Opostos</text>
+    <text x="0" y="85" class="example-label" fill="#FF4444">cos(θ) = -1</text>
+    <text x="0" y="100" class="example-label">"bom" ↔ "ruim"</text>
+  </g>
+  
+  <!-- Legend -->
+  <g transform="translate(50, 450)">
+    <text x="0" y="0" class="example-label">Interpretação: cos(θ) ∈ [-1, 1]</text>
+    <text x="200" y="0" class="example-label" fill="#00FF88">Próximo de 1: Muito similar</text>
+    <text x="400" y="0" class="example-label" fill="#FFAA00">Próximo de 0: Não relacionado</text>
+    <text x="600" y="0" class="example-label" fill="#FF4444">Próximo de -1: Oposto</text>
+  </g>
+</svg>

@@ -1,0 +1,79 @@
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <style>
+      .bg { fill: #0A0A0F; }
+      .text-title { fill: #00D4FF; font-family: 'Arial', sans-serif; font-size: 24px; font-weight: bold; }
+      .text-label { fill: #00D4FF; font-family: 'Arial', sans-serif; font-size: 16px; font-weight: 600; }
+      .text-word { fill: #FFFFFF; font-family: 'Arial', sans-serif; font-size: 18px; font-weight: 500; }
+      .text-vector { fill: #4ECDC4; font-family: 'Courier New', monospace; font-size: 14px; }
+      .text-equation { fill: #FFB74D; font-family: 'Arial', sans-serif; font-size: 16px; font-weight: 500; }
+      .word-box { fill: #1A1A2E; stroke: #00D4FF; stroke-width: 2; rx: 8; }
+      .vector-box { fill: #16213E; stroke: #4ECDC4; stroke-width: 2; rx: 6; }
+      .arrow { stroke: #00D4FF; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .equation-box { fill: #2A1810; stroke: #FFB74D; stroke-width: 2; rx: 8; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#00D4FF"/>
+    </marker>
+  </defs>
+  
+  <!-- Background -->
+  <rect class="bg" width="800" height="500"/>
+  
+  <!-- Title -->
+  <text class="text-title" x="400" y="35" text-anchor="middle">Espaço Semântico Vetorial</text>
+  <text class="text-label" x="400" y="60" text-anchor="middle">Como palavras se tornam vetores</text>
+  
+  <!-- Word 1: rei -->
+  <rect class="word-box" x="50" y="100" width="80" height="40"/>
+  <text class="text-word" x="90" y="125" text-anchor="middle">rei</text>
+  
+  <!-- Arrow 1 -->
+  <line class="arrow" x1="140" y1="120" x2="200" y2="120"/>
+  <text class="text-label" x="170" y="110" text-anchor="middle" font-size="12">PALAVRA</text>
+  
+  <!-- Vector 1 -->
+  <rect class="vector-box" x="210" y="90" width="200" height="60"/>
+  <text class="text-vector" x="220" y="110">[0.23, -0.81, 0.45,</text>
+  <text class="text-vector" x="220" y="130"> 0.12, -0.33, 0.67]</text>
+  
+  <!-- Word 2: rainha -->
+  <rect class="word-box" x="50" y="200" width="80" height="40"/>
+  <text class="text-word" x="90" y="225" text-anchor="middle">rainha</text>
+  
+  <!-- Arrow 2 -->
+  <line class="arrow" x1="140" y1="220" x2="200" y2="220"/>
+  
+  <!-- Vector 2 -->
+  <rect class="vector-box" x="210" y="190" width="200" height="60"/>
+  <text class="text-vector" x="220" y="210">[0.19, -0.75, 0.52,</text>
+  <text class="text-vector" x="220" y="230"> 0.08, -0.29, 0.71]</text>
+  
+  <!-- Word 3: homem -->
+  <rect class="word-box" x="50" y="300" width="80" height="40"/>
+  <text class="text-word" x="90" y="325" text-anchor="middle">homem</text>
+  
+  <!-- Arrow 3 -->
+  <line class="arrow" x1="140" y1="320" x2="200" y2="320"/>
+  
+  <!-- Vector 3 -->
+  <rect class="vector-box" x="210" y="290" width="200" height="60"/>
+  <text class="text-vector" x="220" y="310">[0.31, -0.62, 0.28,</text>
+  <text class="text-vector" x="220" y="330"> 0.15, -0.41, 0.53]</text>
+  
+  <!-- Equation Section -->
+  <rect class="equation-box" x="480" y="150" width="280" height="120"/>
+  <text class="text-label" x="620" y="175" text-anchor="middle">Aritmética Vetorial</text>
+  
+  <text class="text-equation" x="500" y="205">rei - homem + mulher</text>
+  <text class="text-equation" x="620" y="230" text-anchor="middle">≈</text>
+  <text class="text-equation" x="500" y="255">rainha</text>
+  
+  <!-- Explanation -->
+  <text class="text-label" x="50" y="400" font-size="14">Cada palavra é convertida em um vetor numérico de alta dimensionalidade</text>
+  <text class="text-label" x="50" y="420" font-size="14">que captura seu significado semântico no espaço vetorial.</text>
+  
+  <!-- Dimension labels -->
+  <text class="text-label" x="450" y="110" font-size="12">Dimensões do vetor</text>
+  <text class="text-label" x="450" y="125" font-size="12">(tipicamente 100-300)</text>
+</svg>

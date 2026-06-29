@@ -1,0 +1,96 @@
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#6A6A8A"/>
+    </marker>
+    <marker id="arrowC" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#00D4FF"/>
+    </marker>
+    <marker id="arrowG" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#00FF88"/>
+    </marker>
+  </defs>
+
+  <rect width="800" height="500" fill="#0A0A0F"/>
+
+  <text x="400" y="30" fill="#00D4FF" font-size="20" font-family="Arial" font-weight="bold" text-anchor="middle">
+    Tool Calling — Como o Agente usa Ferramentas
+  </text>
+
+  <!-- User -->
+  <rect x="30" y="70" width="160" height="40" rx="8" fill="#1A1A2E" stroke="#00D4FF" stroke-width="1.5"/>
+  <text x="110" y="95" fill="#fff" font-size="13" font-family="Arial" font-weight="600" text-anchor="middle">👤 Usuário</text>
+
+  <!-- LLM -->
+  <rect x="320" y="70" width="160" height="40" rx="8" fill="#1A1A2E" stroke="#7C5CFC" stroke-width="1.5"/>
+  <text x="400" y="95" fill="#fff" font-size="13" font-family="Arial" font-weight="600" text-anchor="middle">🤖 LLM</text>
+
+  <!-- Tools -->
+  <rect x="610" y="60" width="160" height="60" rx="8" fill="#1A1A2E" stroke="#FFD700" stroke-width="1.5"/>
+  <text x="690" y="85" fill="#FFD700" font-size="13" font-family="Arial" font-weight="600" text-anchor="middle">🔧 Ferramentas</text>
+  <text x="690" y="105" fill="#6A6A8A" font-size="11" font-family="Arial" text-anchor="middle">busca, calculadora, hora</text>
+
+  <!-- Step 1: User → LLM -->
+  <line x1="190" y1="90" x2="315" y2="90" stroke="#00D4FF" stroke-width="1.5" marker-end="url(#arrowC)"/>
+  <text x="252" y="82" fill="#00D4FF" font-size="10" font-family="Arial" text-anchor="middle">1. "Qual a</text>
+  <text x="252" y="96" fill="#00D4FF" font-size="10" font-family="Arial" text-anchor="middle">cotação do dólar?"</text>
+
+  <!-- Step 2: LLM → Tools (function call) -->
+  <line x1="480" y1="85" x2="605" y2="75" stroke="#FFD700" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="542" y="68" fill="#FFD700" font-size="10" font-family="Arial" text-anchor="middle">2. tool_call:</text>
+  <text x="542" y="82" fill="#FFD700" font-size="10" font-family="Arial" text-anchor="middle">web_search("cotação</text>
+  <text x="542" y="96" fill="#FFD700" font-size="10" font-family="Arial" text-anchor="middle">dólar hoje")</text>
+
+  <!-- Step 3: Tools → LLM (result) -->
+  <line x1="605" y1="100" x2="485" y2="100" stroke="#00FF88" stroke-width="1.5" marker-end="url(#arrowG)"/>
+  <text x="542" y="118" fill="#00FF88" font-size="10" font-family="Arial" text-anchor="middle">3. resultado:</text>
+  <text x="542" y="132" fill="#00FF88" font-size="10" font-family="Arial" text-anchor="middle">"R$ 5,47"</text>
+
+  <!-- Step 4: LLM → User (final response) -->
+  <line x1="315" y1="100" x2="195" y2="100" stroke="#00FF88" stroke-width="1.5" marker-end="url(#arrowG)"/>
+  <text x="252" y="118" fill="#00FF88" font-size="10" font-family="Arial" text-anchor="middle">4. "A cotação do</text>
+  <text x="252" y="132" fill="#00FF88" font-size="10" font-family="Arial" text-anchor="middle">dólar é R$5,47"</text>
+
+  <!-- Detailed flow below -->
+  <rect x="30" y="170" width="740" height="310" rx="12" fill="#0D0D1A" stroke="#2A2A4A" stroke-width="1"/>
+
+  <text x="400" y="200" fill="#6A6A8A" font-size="13" font-family="Arial" font-weight="600" text-anchor="middle">
+    Detalhamento do Fluxo (visão do código)
+  </text>
+
+  <!-- Code-like flow -->
+  <g font-family="monospace" font-size="12">
+    <text x="60" y="235" fill="#C792EA">async def</text>
+    <text x="170" y="235" fill="#82AAFF">call_with_tools</text>
+    <text x="340" y="235" fill="#89DDFF">(messages, tools):</text>
+
+    <text x="80" y="260" fill="#546E7A"># 1. Envia mensagem para o LLM com tools</text>
+    <text x="80" y="280" fill="#6A6A8A">response = await openrouter.chat(messages, tools)</text>
+
+    <text x="80" y="310" fill="#546E7A"># 2. Se o LLM decidiu usar uma ferramenta...</text>
+    <text x="80" y="335" fill="#C792EA">if</text>
+    <text x="105" y="335" fill="#6A6A8A">response.</text>
+    <text x="230" y="335" fill="#F78C6C">tool_calls</text>
+    <text x="340" y="335" fill="#89DDFF">:</text>
+
+    <text x="100" y="360" fill="#546E7A"># 3. Executa a ferramenta localmente</text>
+    <text x="100" y="380" fill="#6A6A8A">result = await execute_tool(tool_call.name, tool_call.args)</text>
+
+    <text x="100" y="410" fill="#546E7A"># 4. Reenvia resultado para o LLM gerar resposta final</text>
+    <text x="100" y="430" fill="#C792EA">return await</text>
+    <text x="200" y="430" fill="#82AAFF">call_with_tools</text>
+    <text x="370" y="430" fill="#89DDFF">(messages + [response, tool_result], tools)</text>
+
+    <text x="80" y="465" fill="#C792EA">return</text>
+    <text x="145" y="465" fill="#6A6A8A">response.</text>
+    <text x="235" y="465" fill="#F78C6C">content</text>
+    <text x="325" y="465" fill="#546E7A"># Resposta direta</text>
+  </g>
+
+  <!-- Info box -->
+  <rect x="560" y="228" width="190" height="70" rx="8" fill="#1A1A2E" stroke="#FFD700" stroke-width="1" opacity="0.8"/>
+  <text x="655" y="250" fill="#FFD700" font-size="11" font-family="Arial" font-weight="600" text-anchor="middle">⚡ Importante</text>
+  <text x="655" y="270" fill="#6A6A8A" font-size="10" font-family="Arial" text-anchor="middle">O LLM não executa</text>
+  <text x="655" y="286" fill="#6A6A8A" font-size="10" font-family="Arial" text-anchor="middle">a ferramenta. Ele só</text>
+  <text x="655" y="302" fill="#6A6A8A" font-size="10" font-family="Arial" text-anchor="middle">diz QUAL usar.</text>
+</svg>

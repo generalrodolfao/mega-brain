@@ -1,0 +1,85 @@
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <marker id="arrowW" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#fff"/>
+    </marker>
+  </defs>
+
+  <rect width="800" height="500" fill="#0A0A0F"/>
+
+  <text x="400" y="30" fill="#00D4FF" font-size="20" font-family="Arial" font-weight="bold" text-anchor="middle">
+    Execução Paralela com Send API (LangGraph)
+  </text>
+
+  <!-- Title: v1 vs v2 -->
+  <rect x="30" y="55" width="350" height="195" rx="10" fill="#1A1A2E" stroke="#FF3355" stroke-width="1" opacity="0.8"/>
+  <text x="205" y="80" fill="#FF3355" font-size="14" font-family="Arial" font-weight="bold" text-anchor="middle">
+    ❌ v1: asyncio.gather (manual)
+  </text>
+
+  <g font-family="monospace" font-size="11" opacity="0.8">
+    <text x="50" y="105" fill="#6A6A8A">agent1 = call("copywriter", task)</text>
+    <text x="50" y="125" fill="#6A6A8A">agent2 = call("strategist", task)</text>
+    <text x="50" y="145" fill="#6A6A8A">agent3 = call("social", task)</text>
+    <text x="50" y="170" fill="#C792EA">results = await asyncio.gather(</text>
+    <text x="70" y="190" fill="#6A6A8A">agent1, agent2, agent3</text>
+    <text x="50" y="210" fill="#89DDFF">)</text>
+    <text x="50" y="235" fill="#546E7A"># + código manual de consolidação</text>
+  </g>
+
+  <rect x="420" y="55" width="350" height="195" rx="10" fill="#1A1A2E" stroke="#00FF88" stroke-width="1.5" opacity="0.9"/>
+  <text x="595" y="80" fill="#00FF88" font-size="14" font-family="Arial" font-weight="bold" text-anchor="middle">
+    ✅ v2: Send API (declarativo)
+  </text>
+
+  <g font-family="monospace" font-size="11" opacity="0.9">
+    <text x="440" y="105" fill="#C792EA">def</text>
+    <text x="475" y="105" fill="#82AAFF"> fanout</text>
+    <text x="540" y="105" fill="#89DDFF">(state):</text>
+    <text x="460" y="125" fill="#C792EA">return</text>
+    <text x="515" y="125" fill="#89DDFF"> [</text>
+    <text x="525" y="145" fill="#F78C6C">  Send("agent", {</text>
+    <text x="545" y="165" fill="#C3E88D">"name"</text>
+    <text x="625" y="165" fill="#89DDFF">: n})</text>
+    <text x="525" y="185" fill="#6A6A8A">  for n in AGENTS</text>
+    <text x="515" y="205" fill="#89DDFF"> ]</text>
+    <text x="460" y="230" fill="#546E7A"># LangGraph gerencia tudo</text>
+  </g>
+
+  <!-- Flow diagram -->
+  <text x="400" y="285" fill="#6A6A8A" font-size="14" font-family="Arial" font-weight="600" text-anchor="middle">
+    Fluxo do Squad Mode
+  </text>
+
+  <!-- Fan out -->
+  <rect x="310" y="305" width="180" height="36" rx="8" fill="#FFD700" opacity="0.15" stroke="#FFD700" stroke-width="1.5"/>
+  <text x="400" y="328" fill="#FFD700" font-size="13" font-family="Arial" font-weight="600" text-anchor="middle">📤 fanout_agents</text>
+
+  <!-- Arrows down to agents -->
+  <line x1="365" y1="341" x2="200" y2="385" stroke="#7C5CFC" stroke-width="1.5" marker-end="url(#arrowW)" opacity="0.6"/>
+  <line x1="400" y1="341" x2="400" y2="385" stroke="#7C5CFC" stroke-width="1.5" marker-end="url(#arrowW)" opacity="0.6"/>
+  <line x1="435" y1="341" x2="600" y2="385" stroke="#7C5CFC" stroke-width="1.5" marker-end="url(#arrowW)" opacity="0.6"/>
+
+  <!-- Agent boxes -->
+  <rect x="130" y="388" width="140" height="38" rx="8" fill="#7C5CFC" opacity="0.15" stroke="#7C5CFC" stroke-width="1"/>
+  <text x="200" y="411" fill="#fff" font-size="12" font-family="Arial" font-weight="500" text-anchor="middle">🧠 copywriter</text>
+
+  <rect x="330" y="388" width="140" height="38" rx="8" fill="#7C5CFC" opacity="0.15" stroke="#7C5CFC" stroke-width="1"/>
+  <text x="400" y="411" fill="#fff" font-size="12" font-family="Arial" font-weight="500" text-anchor="middle">📊 strategist</text>
+
+  <rect x="530" y="388" width="140" height="38" rx="8" fill="#7C5CFC" opacity="0.15" stroke="#7C5CFC" stroke-width="1"/>
+  <text x="600" y="411" fill="#fff" font-size="12" font-family="Arial" font-weight="500" text-anchor="middle">📱 social</text>
+
+  <!-- Converge -->
+  <line x1="200" y1="426" x2="350" y2="460" stroke="#00FF88" stroke-width="1.5" opacity="0.6"/>
+  <line x1="400" y1="426" x2="400" y2="455" stroke="#00FF88" stroke-width="1.5" opacity="0.6"/>
+  <line x1="600" y1="426" x2="450" y2="460" stroke="#00FF88" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- Consolidate -->
+  <rect x="310" y="455" width="180" height="32" rx="8" fill="#00FF88" opacity="0.12" stroke="#00FF88" stroke-width="1.5"/>
+  <text x="400" y="476" fill="#00FF88" font-size="13" font-family="Arial" font-weight="600" text-anchor="middle">📥 consolidate</text>
+
+  <!-- Time annotation -->
+  <text x="690" y="350" fill="#FFD700" font-size="11" font-family="Arial" font-weight="600">⏱ Todos executam</text>
+  <text x="690" y="370" fill="#6A6A8A" font-size="11" font-family="Arial">ao mesmo tempo!</text>
+</svg>

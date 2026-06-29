@@ -1,0 +1,35 @@
+# Environment & Secrets
+.env
+megabrain_v2/.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Runtime data (personal/conversation data)
+data/memory.json
+data/conversation.json
+data/tts_cache/
+
+# LangGraph checkpoints
+megabrain_v2/.langgraph_api/
+
+# Audio cache
+*.wav

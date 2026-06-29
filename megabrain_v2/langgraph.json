@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "megabrain": "./graph.py:build_graph"
+  },
+  "env": ".env"
+}

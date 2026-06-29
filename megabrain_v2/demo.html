@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mega Brain v2 — Demo da Execução</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0A0A0F;
+    --card: #14141F;
+    --border: #2A2A4A;
+    --cyan: #00D4FF;
+    --green: #00FF88;
+    --gold: #FFD700;
+    --purple: #7C5CFC;
+    --red: #FF3355;
+    --text: #E8E8F0;
+    --muted: #6A6A8A;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .container {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    max-width: 1100px;
+    width: 100%;
+    padding: 40px;
+  }
+
+  .graph-section {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .graph-section h2 {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .mermaid { width: 100%; font-size: 13px; }
+
+  .log-section {
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .log-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .log-card h3 {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .log-entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 13px;
+    font-family: monospace;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    opacity: 0;
+    transform: translateX(-10px);
+    animation: slideIn 0.3s ease forwards;
+  }
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .log-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .log-dot.c { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+  .log-dot.g { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .log-dot.y { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+  .log-dot.p { background: var(--purple); box-shadow: 0 0 6px var(--purple); }
+  .log-time {
+    font-size: 10px;
+    color: var(--muted);
+    min-width: 45px;
+  }
+
+  .response-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    min-height: 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .response-box h3 {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .response-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .response-text.visible { opacity: 1; }
+
+  .status-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(10,10,15,0.9);
+    border-top: 1px solid var(--border);
+    padding: 10px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .btn-restart {
+    background: linear-gradient(135deg, #00D4FF, #7C5CFC);
+    border: none;
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-restart:hover { opacity: 0.9; }
+
+  .prompt-display {
+    background: #0D0D1A;
+    border: 1px solid var(--cyan);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-family: monospace;
+    font-size: 14px;
+    color: var(--cyan);
+    text-align: center;
+    transition: all 0.3s;
+    margin-bottom: 6px;
+  }
+  .phase-indicator {
+    font-size: 11px;
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+  }
+  .phase-indicator span {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin: 0 2px;
+    transition: all 0.3s;
+  }
+  .phase-indicator .active { background: var(--cyan); color: #000; font-weight: 700; }
+  .phase-indicator .done { color: var(--green); }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="graph-section">
+    <h2>StateGraph ao Vivo</h2>
+    <div class="mermaid" id="mermaidGraph"></div>
+  </div>
+
+  <div class="log-section">
+    <div class="prompt-display" id="promptDisplay">⏳ Iniciando demo...</div>
+    <div class="phase-indicator" id="phaseIndicator">
+      <span id="phStart">START</span> →
+      <span id="phClassify">sentimento</span> →
+      <span id="phComplexity">complexidade</span> →
+      <span id="phRoute">rota</span> →
+      <span id="phEnd">END</span>
+    </div>
+
+    <div class="log-card">
+      <h3>📊 Log de Execução</h3>
+      <div id="logEntries">
+        <div class="log-entry" style="opacity:0.5">
+          <span class="log-dot p"></span>
+          <span class="log-time">--:--:--</span>
+          <span>Aguardando...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="response-box" id="responseBox">
+      <h3>💬 Resposta</h3>
+      <div class="response-text" id="responseText"></div>
+    </div>
+  </div>
+</div>
+
+<div class="status-bar">
+  <span>Mega Brain v2 · LangGraph · Demo Automática</span>
+  <button class="btn-restart" onclick="restartDemo()">🔄 Repetir Demo</button>
+</div>
+
+<script>
+mermaid.initialize({startOnLoad:false,theme:'dark',securityLevel:'loose',
+  themeVariables:{primaryColor:'#0B1628',primaryTextColor:'#CCE8FF',lineColor:'#1A2D45',fontSize:'11px'}});
+
+const DEMOS = [
+  {
+    prompt: '"explique o que é um grafo computacional"',
+    route: 'fast',
+    response: 'Um grafo computacional é uma estrutura onde nós representam operações e arestas representam o fluxo de dados entre elas. Usado em IA para definir pipelines de processamento.',
+    model: 'Gemini 2.5 Flash',
+  },
+  {
+    prompt: '"compare Python com JavaScript para backend"',
+    route: 'standard',
+    response: '📊 Python vs JavaScript Backend:\n\nPython: ecossistema maduro (Django, FastAPI), tipagem forte, ideal para dados/IA.\n\nJavaScript (Node.js): performance I/O não-bloqueante, single language fullstack, ecossistema NPM.\n\nEscolha: IA/ML → Python. APIs real-time → Node.',
+    model: 'GPT-4o',
+  },
+  {
+    prompt: '"mega brain: crie uma campanha de marketing para o Café com Dados"',
+    route: 'squad',
+    response: '🧠 Campanha Café com Dados:\n\n📝 Copy: "Transforme dados em decisões — comece com um café."\n📊 Estratégia: Foco em LinkedIn, público tech.\n📱 Social: Posts carrossel com cases reais.\n🔍 SEO: Keywords "dados", "IA", "carreira tech".\n\n🎯 CTA: Encontro presencial — próxima edição em Julho!',
+    model: 'Claude Sonnet 4 (Copy Chief)',
+  },
+  {
+    prompt: '"faça uma análise profunda sobre o mercado de IA no Brasil em 2026"',
+    route: 'premium',
+    response: '📊 Análise: Mercado de IA no Brasil 2026\n\nMercado deve atingir R$ 25bi em 2026, crescimento 28% a.a. Principais setores: fintechs, agronegócio e healthtech.\n\nDesafios: déficit de 500k profissionais, regulação em andamento (PL 2338/23).\n\nOportunidades: interiorização dos polos tech, democratização com modelos open-source.',
+    model: 'Claude Sonnet 4',
+  },
+];
+
+let demoIndex = 0;
+
+function addLog(time, color, msg) {
+  const container = document.getElementById('logEntries');
+  const div = document.createElement('div');
+  div.className = 'log-entry';
+  div.innerHTML = `<span class="log-dot ${color}"></span><span class="log-time">${time}</span><span>${msg}</span>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function setPhase(n) {
+  const phases = ['phStart', 'phClassify', 'phComplexity', 'phRoute', 'phEnd'];
+  phases.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = i < n ? 'done' : i === n ? 'active' : '';
+  });
+  if (n >= 3) {
+    document.getElementById('phRoute').textContent = 
+      currentRoute === 'squad' ? 'squad ⚔️' : 
+      currentRoute === 'premium' ? 'premium 🧠' : 
+      currentRoute === 'standard' ? 'standard ⚡' : 'fast 💬';
+  }
+}
+
+let currentRoute = '';
+
+function highlightNode(node) {
+  const svg = document.querySelector('#mermaidGraph svg');
+  if (!svg) return;
+
+  const allTexts = svg.querySelectorAll('text, tspan');
+
+  function findGroup(label) {
+    for (const el of allTexts) {
+      if (el.textContent && el.textContent.toLowerCase().includes(label.toLowerCase())) {
+        let p = el.closest('g') || el.parentElement;
+        while (p && p !== svg) {
+          if (p.querySelectorAll('rect').length > 0) return p;
+          p = p.parentElement;
+        }
+      }
+    }
+    return null;
+  }
+
+  function hl(label, color, fill, width) {
+    const g = findGroup(label);
+    if (!g) return;
+    g.querySelectorAll('rect').forEach(r => {
+      r.setAttribute('stroke', color);
+      r.setAttribute('stroke-width', width || '3');
+      r.setAttribute('fill', fill);
+      r.style.stroke = color;
+      r.style.strokeWidth = (width || '3') + 'px';
+      r.style.fill = fill;
+    });
+    g.querySelectorAll('text, tspan').forEach(t => t.setAttribute('fill', '#ffffff'));
+  }
+
+  function hlDone(label, color) {
+    const g = findGroup(label);
+    if (!g) return;
+    g.querySelectorAll('rect').forEach(r => {
+      r.setAttribute('stroke', color);
+      r.setAttribute('stroke-width', '2');
+      r.setAttribute('fill', color === '#00D4FF' ? '#0a2a3a' : '#14142A');
+    });
+    g.querySelectorAll('text, tspan').forEach(t => {
+      if (!t.textContent.includes('✓')) t.textContent += ' ✓';
+      t.setAttribute('fill', color);
+    });
+  }
+
+  // Reset all
+  ['sentimento','complexidade','decide_route','respond_fast','respond_std','respond_premium','squad_fanout','squad_consolidate'].forEach(l => {
+    const g = findGroup(l);
+    if (!g) return;
+    g.querySelectorAll('rect').forEach(r => {
+      r.setAttribute('stroke-width', '2');
+      r.removeAttribute('style');
+    });
+    g.querySelectorAll('text, tspan').forEach(t => {
+      t.textContent = t.textContent.replace(' ✓', '').replace(' ⚡', '');
+    });
+  });
+
+  if (!node || node === 'none') return;
+
+  const CYAN = '#00D4FF', GREEN = '#00FF88', GOLD = '#FFD700', PURPLE = '#7C5CFC', BLUE = '#4A9EFF';
+
+  if (node === 'sentiment') {
+    hl('sentimento', CYAN, '#0a2a3a', 3);
+  } else if (node === 'complexity') {
+    hlDone('sentimento', CYAN);
+    hl('complexidade', CYAN, '#0a2a3a', 3);
+  } else if (node === 'decide') {
+    hlDone('sentimento', CYAN);
+    hlDone('complexidade', CYAN);
+    hl('decide_route', CYAN, '#0a2a3a', 3);
+  } else if (node === 'fast') {
+    hlDone('sentimento', CYAN); hlDone('complexidade', CYAN); hlDone('decide_route', CYAN);
+    hl('respond_fast', GREEN, '#0a2a1a', 4);
+  } else if (node === 'standard') {
+    hlDone('sentimento', CYAN); hlDone('complexidade', CYAN); hlDone('decide_route', CYAN);
+    hl('respond_std', BLUE, '#0a1a2a', 4);
+  } else if (node === 'premium') {
+    hlDone('sentimento', CYAN); hlDone('complexidade', CYAN); hlDone('decide_route', CYAN);
+    hl('respond_premium', PURPLE, '#1a0a2a', 4);
+  } else if (node === 'fanout') {
+    hlDone('sentimento', CYAN); hlDone('complexidade', CYAN); hlDone('decide_route', CYAN);
+    hl('squad_fanout', GOLD, '#3a2a0a', 4);
+  } else if (node === 'consolidate') {
+    hlDone('sentimento', CYAN); hlDone('complexidade', CYAN); hlDone('decide_route', CYAN);
+    hlDone('squad_fanout', GOLD);
+    hl('squad_consolidate', GOLD, '#3a2a0a', 4);
+  }
+}
+
+async function runDemo(demo) {
+  currentRoute = demo.route;
+  document.getElementById('promptDisplay').textContent = demo.prompt;
+  document.getElementById('promptDisplay').style.borderColor = 'var(--cyan)';
+  document.getElementById('logEntries').innerHTML = '';
+  document.getElementById('responseText').textContent = '';
+  document.getElementById('responseText').classList.remove('visible');
+
+  // Phase 1: START → analyze_sentiment
+  setPhase(1);
+  addLog('00:00.0', 'p', 'START → analyze_sentiment');
+  highlightNode('sentiment');
+  await sleep(900);
+
+  // Phase 2: detect_complexity
+  setPhase(2);
+  addLog('00:00.9', 'c', 'analyze_sentiment: sentimento detectado');
+  addLog('00:01.2', 'c', 'analyze_sentiment → detect_complexity');
+  highlightNode('complexity');
+  await sleep(900);
+
+  addLog('00:01.8', 'c', 'detect_complexity: analisando texto...');
+  addLog('00:02.4', 'c', `Complexidade: ${demo.route === 'premium' ? 'alta' : demo.route === 'standard' ? 'média' : demo.route === 'squad' ? 'squad detectado' : 'baixa'}`);
+  await sleep(800);
+
+  // Phase 3: decide_route
+  setPhase(3);
+  addLog('00:03.2', 'c', 'detect_complexity → decide_route');
+  highlightNode('decide');
+  await sleep(800);
+
+  addLog('00:04.0', 'c', `decide_route: rota = ${demo.route}`);
+  await sleep(700);
+
+  // Phase 4: Execute route
+  setPhase(4);
+  if (demo.route === 'squad') {
+    addLog('00:04.7', 'y', 'decide_route → squad_fanout');
+    highlightNode('fanout');
+    await sleep(1000);
+
+    addLog('00:05.7', 'y', 'squad_fanout: disparando 4 agentes paralelos');
+    await sleep(800);
+    addLog('00:06.5', 'y', '  ├ copywriter (gpt-4o-mini)');
+    await sleep(700);
+    addLog('00:07.2', 'y', '  ├ strategist (gpt-4o)');
+    await sleep(700);
+    addLog('00:07.9', 'y', '  ├ social_media (gpt-4o-mini)');
+    await sleep(700);
+    addLog('00:08.6', 'y', '  └ seo (gpt-4o-mini)');
+    await sleep(700);
+
+    addLog('00:09.3', 'y', '4 agentes concluídos → squad_consolidate');
+    highlightNode('consolidate');
+    await sleep(1000);
+    addLog('00:10.3', 'y', 'squad_consolidate: Copy Chief unificando...');
+    await sleep(1200);
+  } else {
+    const tierName = demo.route === 'fast' ? 'respond_fast (gemini)' : demo.route === 'standard' ? 'respond_standard (gpt-4o)' : 'respond_premium (claude)';
+    addLog('00:04.7', 'g', `decide_route → ${tierName}`);
+    highlightNode(demo.route);
+    await sleep(1000);
+    addLog('00:05.7', 'g', `${tierName}: gerando resposta...`);
+    await sleep(1200);
+  }
+
+  setPhase(5);
+  addLog(demo.route === 'squad' ? '00:11.5' : '00:07.0', 'g', '✓ Resposta gerada → END');
+  await sleep(800);
+
+  // Show response
+  document.getElementById('responseText').textContent = demo.response;
+  document.getElementById('responseText').classList.add('visible');
+  document.getElementById('promptDisplay').style.borderColor = 'var(--green)';
+
+  // Next demo
+  await sleep(6000);
+  document.getElementById('promptDisplay').style.borderColor = 'var(--cyan)';
+  demoIndex = (demoIndex + 1) % DEMOS.length;
+  runDemo(DEMOS[demoIndex]);
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function restartDemo() {
+  demoIndex = 0;
+  currentRoute = '';
+  document.getElementById('logEntries').innerHTML = '';
+  document.getElementById('responseText').textContent = '';
+  document.getElementById('responseText').classList.remove('visible');
+  setPhase(-1);
+  highlightNode('none');
+  document.getElementById('promptDisplay').style.borderColor = 'var(--cyan)';
+  runDemo(DEMOS[0]);
+}
+
+// Start - initial render
+const INITIAL_GRAPH = `graph TD
+  S(["START"]):::s
+  SENT["sentimento"]:::s1
+  COMP["complexidade"]:::s2
+  DECIDE["decide_route"]:::d
+  FAST["respond_fast<br/>gemini"]:::f
+  STD["respond_std<br/>gpt-4o"]:::m
+  PREM["respond_premium<br/>claude"]:::p
+  FANOUT["squad_fanout<br/>4 agentes"]:::q
+  CONSOL["squad_consolidate<br/>copy chief"]:::c2
+  E(["END"]):::e
+
+  S --> SENT
+  SENT --> COMP
+  COMP --> DECIDE
+  DECIDE -. &nbsp;fast&nbsp; .-> FAST
+  DECIDE -.-> STD
+  DECIDE -.-> PREM
+  DECIDE ==>|&nbsp;squad&nbsp;| FANOUT
+  FAST --> E
+  STD --> E
+  PREM --> E
+  FANOUT --> CONSOL
+  CONSOL --> E
+
+  classDef s fill:#14142A,stroke:#7C5CFC,stroke-width:2,color:#7C5CFC
+  classDef e fill:#14142A,stroke:#00FF88,stroke-width:2,color:#00FF88
+  classDef s1 fill:#14142A,stroke:#00D4FF,stroke-width:2,color:#00D4FF
+  classDef s2 fill:#14142A,stroke:#00D4FF,stroke-width:2,color:#00D4FF
+  classDef d fill:#14142A,stroke:#00D4FF,stroke-width:2,color:#00D4FF
+  classDef f fill:#14142A,stroke:#059669,stroke-width:2,color:#059669
+  classDef m fill:#14142A,stroke:#4A9EFF,stroke-width:2,color:#4A9EFF
+  classDef p fill:#14142A,stroke:#7C5CFC,stroke-width:2,color:#7C5CFC
+  classDef q fill:#14142A,stroke:#FFD700,stroke-width:2,color:#FFD700
+  classDef c2 fill:#14142A,stroke:#FFD700,stroke-width:2,color:#FFD700`;
+
+mermaid.render('graphMain', INITIAL_GRAPH).then(({svg}) => {
+  document.getElementById('mermaidGraph').innerHTML = svg;
+  setTimeout(() => runDemo(DEMOS[0]), 1000);
+});
+</script>
+</body>
+</html>

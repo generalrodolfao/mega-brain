@@ -1,0 +1,118 @@
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
+  <style>
+    .bg { fill: #0A0A0F; }
+    .text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; fill: #FFFFFF; text-anchor: middle; }
+    .node-text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; fill: #FFFFFF; text-anchor: middle; font-weight: 500; }
+    .edge-text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10px; fill: #CCCCCC; text-anchor: middle; }
+    .classify { fill: #00FFFF; stroke: #00CCCC; stroke-width: 2; }
+    .respond { fill: #00FF88; stroke: #00CC66; stroke-width: 2; }
+    .fanout { fill: #FFD700; stroke: #CCAA00; stroke-width: 2; }
+    .agent { fill: #AA88FF; stroke: #8866CC; stroke-width: 2; }
+    .consolidate { fill: #4488FF; stroke: #3366CC; stroke-width: 2; }
+    .start-end { fill: #666666; stroke: #888888; stroke-width: 2; }
+    .arrow { stroke: #CCCCCC; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+  </style>
+  
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#CCCCCC" />
+    </marker>
+  </defs>
+  
+  <rect class="bg" width="800" height="500"/>
+  
+  <!-- START -->
+  <rect class="start-end" x="370" y="20" width="60" height="30" rx="15"/>
+  <text class="node-text" x="400" y="38">START</text>
+  
+  <!-- classify_route -->
+  <rect class="classify" x="340" y="80" width="120" height="40" rx="8"/>
+  <text class="node-text" x="400" y="103">classify_route</text>
+  
+  <!-- Response nodes -->
+  <rect class="respond" x="50" y="180" width="100" height="40" rx="8"/>
+  <text class="node-text" x="100" y="198">respond</text>
+  <text class="edge-text" x="100" y="213">(gemini-flash)</text>
+  
+  <rect class="respond" x="200" y="180" width="100" height="40" rx="8"/>
+  <text class="node-text" x="250" y="198">respond</text>
+  <text class="edge-text" x="250" y="213">(gpt-4o)</text>
+  
+  <rect class="respond" x="350" y="180" width="100" height="40" rx="8"/>
+  <text class="node-text" x="400" y="198">respond</text>
+  <text class="edge-text" x="400" y="213">(claude-sonnet)</text>
+  
+  <!-- fanout_agents -->
+  <rect class="fanout" x="520" y="180" width="120" height="40" rx="8"/>
+  <text class="node-text" x="580" y="203">fanout_agents</text>
+  
+  <!-- Agent nodes -->
+  <rect class="agent" x="480" y="280" width="60" height="30" rx="6"/>
+  <text class="node-text" x="510" y="298">agent1</text>
+  
+  <rect class="agent" x="550" y="280" width="60" height="30" rx="6"/>
+  <text class="node-text" x="580" y="298">agent2</text>
+  
+  <rect class="agent" x="620" y="280" width="60" height="30" rx="6"/>
+  <text class="node-text" x="650" y="298">agent3</text>
+  
+  <rect class="agent" x="690" y="280" width="60" height="30" rx="6"/>
+  <text class="node-text" x="720" y="298">agent4</text>
+  
+  <!-- consolidate -->
+  <rect class="consolidate" x="540" y="360" width="100" height="40" rx="8"/>
+  <text class="node-text" x="590" y="383">consolidate</text>
+  
+  <!-- END nodes -->
+  <rect class="start-end" x="70" y="280" width="60" height="30" rx="15"/>
+  <text class="node-text" x="100" y="298">END</text>
+  
+  <rect class="start-end" x="220" y="280" width="60" height="30" rx="15"/>
+  <text class="node-text" x="250" y="298">END</text>
+  
+  <rect class="start-end" x="370" y="280" width="60" height="30" rx="15"/>
+  <text class="node-text" x="400" y="298">END</text>
+  
+  <rect class="start-end" x="560" y="440" width="60" height="30" rx="15"/>
+  <text class="node-text" x="590" y="458">END</text>
+  
+  <!-- Arrows -->
+  <!-- START to classify_route -->
+  <line class="arrow" x1="400" y1="50" x2="400" y2="80"/>
+  
+  <!-- classify_route to responses -->
+  <line class="arrow" x1="360" y1="120" x2="120" y2="180"/>
+  <text class="edge-text" x="220" y="145">fast</text>
+  
+  <line class="arrow" x1="380" y1="120" x2="250" y2="180"/>
+  <text class="edge-text" x="300" y="145">standard</text>
+  
+  <line class="arrow" x1="400" y1="120" x2="400" y2="180"/>
+  <text class="edge-text" x="420" y="145">premium</text>
+  
+  <line class="arrow" x1="440" y1="120" x2="560" y2="180"/>
+  <text class="edge-text" x="520" y="145">squad</text>
+  
+  <!-- Response nodes to END -->
+  <line class="arrow" x1="100" y1="220" x2="100" y2="280"/>
+  <line class="arrow" x1="250" y1="220" x2="250" y2="280"/>
+  <line class="arrow" x1="400" y1="220" x2="400" y2="280"/>
+  
+  <!-- fanout_agents to agents -->
+  <line class="arrow" x1="560" y1="220" x2="510" y2="280"/>
+  <line class="arrow" x1="570" y1="220" x2="580" y2="280"/>
+  <line class="arrow" x1="590" y1="220" x2="650" y2="280"/>
+  <line class="arrow" x1="600" y1="220" x2="720" y2="280"/>
+  
+  <!-- Agents to consolidate -->
+  <line class="arrow" x1="510" y1="310" x2="560" y2="360"/>
+  <line class="arrow" x1="580" y1="310" x2="580" y2="360"/>
+  <line class="arrow" x1="650" y1="310" x2="610" y2="360"/>
+  <line class="arrow" x1="720" y1="310" x2="620" y2="360"/>
+  
+  <!-- consolidate to END -->
+  <line class="arrow" x1="590" y1="400" x2="590" y2="440"/>
+  
+  <!-- Title -->
+  <text class="text" x="400" y="480" style="font-size: 16px; font-weight: bold;">Arquitetura Mega Brain v2 LangGraph</text>
+</svg>

@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Café com Dados #5 — Construindo um Mega Brain com IA</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --color-primary: #00D4FF;
+            --color-secondary: #7C5CFC;
+            --color-accent: #FFD700;
+            --color-green: #00FF88;
+            --color-red: #FF3355;
+            --color-background: #0A0A0F;
+            --color-surface: #14141F;
+            --color-card: #1A1A2E;
+            --color-border: #2A2A4A;
+            --color-text: #E8E8F0;
+            --color-muted: #6A6A8A;
+            --typography-font-heading: 'Inter', sans-serif;
+            --typography-font-body: 'Inter', sans-serif;
+            --primitive-gradient-primary: linear-gradient(135deg, #00D4FF, #7C5CFC);
+            --primitive-gradient-warm: linear-gradient(135deg, #FFD700, #FF6B6B);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--color-background);
+            color: var(--color-text);
+            font-family: var(--typography-font-body);
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            font-size: 18px;
+        }
+
+        .slide-deck {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        @media (min-width: 769px) {
+            .slide-deck {
+                max-width: calc(100vh * 16 / 9);
+                max-height: calc(100vw * 9 / 16);
+                margin: auto;
+                position: absolute;
+                inset: 0;
+            }
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 60px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease;
+            background: var(--color-background);
+            overflow: hidden;
+        }
+        .slide.active { opacity: 1; visibility: visible; }
+
+        .slide-content {
+            width: 100%;
+            max-width: 1050px;
+            max-height: 100%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            z-index: 1;
+            position: relative;
+        }
+        .slide-content::-webkit-scrollbar { width: 4px; }
+        .slide-content::-webkit-scrollbar-track { background: transparent; }
+
+        /* Background decorations */
+        .bg-grid {
+            position: absolute; inset: 0;
+            background-image: linear-gradient(rgba(0,212,255,0.04) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0,212,255,0.04) 1px, transparent 1px);
+            background-size: 80px 80px;
+            pointer-events: none;
+        }
+        .bg-glow {
+            position: absolute;
+            width: 500px; height: 500px;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        /* Typography */
+        .slide-title {
+            font-family: var(--typography-font-heading);
+            font-size: clamp(36px, 5.5vw, 72px);
+            font-weight: 800;
+            background: var(--primitive-gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+            letter-spacing: -1px;
+        }
+        .slide-title.warm {
+            background: var(--primitive-gradient-warm);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        .slide-subtitle {
+            font-size: clamp(18px, 2.5vw, 28px);
+            color: var(--color-muted);
+            font-weight: 400;
+            line-height: 1.4;
+        }
+        h2 {
+            font-family: var(--typography-font-heading);
+            font-size: clamp(28px, 4vw, 52px);
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2;
+        }
+        h3 {
+            font-size: clamp(20px, 3vw, 32px);
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 8px;
+        }
+
+        /* Code blocks */
+        .code-block {
+            background: #0D0D1A;
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            padding: 20px 28px;
+            text-align: left;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 14px;
+            line-height: 1.7;
+            color: #B8C8E0;
+            overflow-x: auto;
+            width: 100%;
+            max-width: 850px;
+        }
+        .code-block .kw { color: #C792EA; }
+        .code-block .fn { color: #82AAFF; }
+        .code-block .str { color: #C3E88D; }
+        .code-block .cm { color: #546E7A; }
+        .code-block .num { color: #F78C6C; }
+        .code-block .op { color: #89DDFF; }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            width: 100%;
+            max-width: 900px;
+        }
+        .card {
+            background: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: left;
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-2px); }
+        .card-icon { font-size: 32px; margin-bottom: 10px; }
+        .card h4 { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+        .card p { font-size: 13px; color: var(--color-muted); line-height: 1.5; }
+
+        /* Two column */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            width: 100%;
+            max-width: 950px;
+            text-align: left;
+        }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+        .col h3 { margin-bottom: 10px; }
+        .col ul { list-style: none; padding: 0; }
+        .col li { padding: 6px 0; color: var(--color-muted); font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .col li::before { content: "▸ "; color: var(--color-primary); }
+
+        /* Timeline */
+        .timeline { width: 100%; max-width: 800px; text-align: left; }
+        .timeline-item {
+            display: flex; gap: 16px; padding: 10px 0; align-items: flex-start;
+        }
+        .timeline-time {
+            min-width: 80px; font-weight: 700; color: var(--color-primary);
+            font-size: 14px; text-align: right;
+        }
+        .timeline-text { font-size: 15px; color: var(--color-muted); }
+        .timeline-text strong { color: #fff; }
+
+        /* Illustration container */
+        .illustration {
+            width: 100%;
+            max-width: 850px;
+            background: #0D0D1A;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .illustration img {
+            display: block;
+            max-width: 100%;
+            max-height: 340px;
+            height: auto;
+            width: auto;
+            object-fit: contain;
+            margin: 0 auto;
+        }
+        .illustration.wide img {
+            max-height: 280px;
+        }
+        .illustration.compact img {
+            max-height: 220px;
+        }
+
+        /* Graph diagram */
+        .graph-diagram {
+            background: #0D0D1A;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 28px;
+            width: 100%;
+            max-width: 850px;
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #B8C8E0;
+            white-space: pre;
+            text-align: left;
+            overflow-x: auto;
+        }
+
+        /* Big number */
+        .big-number {
+            font-size: clamp(60px, 10vw, 120px);
+            font-weight: 900;
+            background: var(--primitive-gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        /* Tags */
+        .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 4px;
+        }
+        .tag.cyan { background: rgba(0,212,255,0.1); color: var(--color-primary); }
+        .tag.green { background: rgba(0,255,136,0.1); color: var(--color-green); }
+        .tag.gold { background: rgba(255,215,0,0.1); color: var(--color-accent); }
+        .tag.purple { background: rgba(124,92,252,0.1); color: var(--color-secondary); }
+
+        /* Comparison table */
+        .comp-table {
+            width: 100%; max-width: 850px;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: left;
+        }
+        .comp-table th {
+            padding: 10px 16px; color: var(--color-muted);
+            font-weight: 600; font-size: 12px; text-transform: uppercase;
+            letter-spacing: 1px; border-bottom: 1px solid var(--color-border);
+        }
+        .comp-table td {
+            padding: 10px 16px; color: #ccc;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .comp-table .check { color: var(--color-green); font-weight: bold; }
+        .comp-table .cross { color: var(--color-red); }
+
+        /* Steps */
+        .steps {
+            display: flex; gap: 12px; width: 100%; max-width: 900px;
+            justify-content: center; flex-wrap: wrap;
+        }
+        .step {
+            background: var(--color-card); border: 1px solid var(--color-border);
+            border-radius: 12px; padding: 16px 20px; text-align: center;
+            min-width: 100px; flex: 1;
+        }
+        .step-num {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, #00D4FF, #7C5CFC);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 8px; font-weight: 700; font-size: 14px; color: #fff;
+        }
+        .step h4 { font-size: 13px; color: #fff; margin-bottom: 4px; }
+        .step p { font-size: 11px; color: var(--color-muted); line-height: 1.4; }
+
+        /* Progress bar */
+        .progress-bar {
+            position: fixed; top: 0; left: 0; height: 3px;
+            background: linear-gradient(90deg, #00D4FF, #7C5CFC, #FFD700);
+            transition: width 0.3s; z-index: 1000;
+        }
+
+        /* Navigation */
+        .nav-controls {
+            position: fixed; bottom: 30px; left: 50%;
+            transform: translateX(-50%);
+            display: flex; align-items: center; gap: 20px; z-index: 1000;
+        }
+        .nav-btn {
+            background: rgba(255,255,255,0.08); border: none;
+            color: #fff; width: 40px; height: 40px;
+            border-radius: 50%; cursor: pointer; font-size: 18px;
+            transition: background 0.2s;
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.15); }
+        .slide-counter { color: var(--color-muted); font-size: 14px; font-weight: 500; }
+
+        /* Chart container */
+        .chart-wrap {
+            width: min(85%, 650px); height: clamp(200px, 35vh, 320px);
+        }
+
+        @media (max-width: 768px) {
+            .slide { padding: 32px 24px; }
+            .card-grid { grid-template-columns: 1fr; }
+            .code-block { font-size: 12px; padding: 14px; }
+            .nav-controls { bottom: 16px; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="slide-deck">
+
+        <!-- ===== 1. TITLE ===== -->
+        <div class="slide active">
+            <div class="bg-grid"></div>
+            <div class="bg-glow" style="background: #00D4FF; top: -100px; left: -100px;"></div>
+            <div class="bg-glow" style="background: #7C5CFC; bottom: -100px; right: -100px;"></div>
+            <div class="slide-content">
+                <div style="font-size: 14px; color: var(--color-primary); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px;">Café com Dados Campinas · 5ª Edição</div>
+                <h1 class="slide-title">Construindo um<br>Mega Brain com IA</h1>
+                <p class="slide-subtitle" style="margin-top: 8px;">De agentes simples a um sistema multi-agente com LangGraph — ao vivo</p>
+                <div style="display: flex; gap: 12px; margin-top: 16px;">
+                    <span class="tag cyan">IA · Agentes</span>
+                    <span class="tag purple">LangGraph</span>
+                    <span class="tag gold">Hands-on</span>
+                </div>
+                <div style="margin-top: 24px; font-size: 14px; color: var(--color-muted);">
+                    27 de Junho de 2026 · Beef Burger Campinas
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 2. AGENDA ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Programa&ccedil;&atilde;o do Dia</h2>
+                <div class="timeline" style="margin-top: 12px;">
+                    <div class="timeline-item">
+                        <div class="timeline-time">10h–11h</div>
+                        <div class="timeline-text"><strong>☕ Café + Networking</strong> — Conhecer a comunidade</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">11h–12h</div>
+                        <div class="timeline-text"><strong>🎤 Elevator Pitch</strong> — 1 min por participante</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">12h–13h30</div>
+                        <div class="timeline-text"><strong>🍔 Almoço</strong></div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time" style="color: var(--color-green);">13h30–15h</div>
+                        <div class="timeline-text"><strong style="color: var(--color-green);">🧠 IA para Iniciantes + LangGraph</strong> — Conceitos e como agentes funcionam</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time" style="color: var(--color-accent);">15h–17h30</div>
+                        <div class="timeline-text"><strong style="color: var(--color-accent);">🚀 Construindo o Mega Brain v2</strong> — Mão na massa com Python + LangGraph</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">17h30–18h</div>
+                        <div class="timeline-text"><strong>💬 Encerramento</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PARTE 1: IA PARA INICIANTES ===== -->
+
+        <!-- ===== 3. SECTION: IA PARA INICIANTES ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="bg-glow" style="background: #00FF88; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 600px; opacity: 0.08;"></div>
+            <div class="slide-content">
+                <div style="font-size: 14px; color: var(--color-green); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px;">Parte 1</div>
+                <h2 style="color: var(--color-green);">IA para Iniciantes</h2>
+                <p class="slide-subtitle">Sem jargão. Sem medo. Do zero ao primeiro agente.</p>
+            </div>
+        </div>
+
+        <!-- ===== 4. O QUE É IA? ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>O que &eacute; Intelig&ecirc;ncia Artificial?</h2>
+                <div class="card-grid" style="margin-top: 16px;">
+                    <div class="card">
+                        <div class="card-icon">🧠</div>
+                        <h4>Não é magia</h4>
+                        <p>IA são sistemas que aprendem padrões a partir de dados — como uma criança que aprende a reconhecer gatos vendo muitas fotos.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">📊</div>
+                        <h4>Aprendizado de Máquina</h4>
+                        <p>Algoritmos que melhoram automaticamente com a experiência. Quanto mais dados, melhor o resultado.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">💬</div>
+                        <h4>LLMs (Modelos de Linguagem)</h4>
+                        <p>Modelos treinados em textos da internet. Eles "completam" texto de forma coerente — o ChatGPT é um exemplo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 5. COMO UM LLM FUNCIONA ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Como um LLM funciona?</h2>
+                <div class="code-block" style="margin-top: 12px;">
+<span class="cm"># Você manda uma pergunta...</span>
+<span class="fn">user</span>: <span class="str">"Explique o que é LangGraph em 1 frase"</span>
+
+<span class="cm"># O modelo prevê a próxima palavra,</span>
+<span class="cm"># uma de cada vez, baseado em probabilidades:</span>
+<span class="fn">assistant</span>: <span class="str">"LangGraph"</span> → <span class="str">"é"</span> → <span class="str">"uma"</span> → <span class="str">"biblioteca"</span> → <span class="str">"para"</span> → <span class="str">"criar"</span> → <span class="str">"aplicações"</span> → <span class="str">"com"</span> → <span class="str">"agentes"</span> → <span class="str">"de"</span> → <span class="str">"IA"</span> → <span class="str">"usando"</span> → <span class="str">"grafos."</span>
+                </div>
+                <p style="font-size: 14px; color: var(--color-muted); margin-top: 12px;">
+                    Não existe "raciocínio" — o modelo apenas prevê o próximo token (palavra/pedaço de palavra) mais provável.
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== 5.5 VETORES E EMBEDDINGS ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2 style="font-size: clamp(24px, 3.5vw, 42px);">Como palavras viram números?</h2>
+                <p style="font-size: 15px; color: var(--color-muted); margin-top: 0;">
+                    Cada palavra é convertida em um <strong style="color: var(--color-primary);">vetor</strong> — uma lista de números que representa seu significado no espaço semântico.
+                </p>
+                <div class="illustration compact" style="margin-top: 6px;">
+                    <img src="megabrain_v2/ilustracoes/espaco_vetorial.svg" alt="Espaço Vetorial">
+                </div>
+                <p style="font-size: 13px; color: var(--color-muted); margin-top: 6px;">
+                    Palavras com significados similares ficam <strong style="color: var(--color-green);">próximas</strong> no espaço vetorial.<br>
+                    "rei - homem + mulher ≈ rainha" — operações matemáticas sobre vetores!
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== 6. DE LLM PARA AGENTE ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>De LLM para Agente</h2>
+                <div class="two-col" style="margin-top: 12px;">
+                    <div class="col">
+                        <h3 style="color: #FF6B6B;">LLM Puro</h3>
+                        <ul>
+                            <li>Só responde com o que foi treinado</li>
+                            <li>Não pode buscar informações novas</li>
+                            <li>Não pode executar ações</li>
+                            <li>Não tem memória entre chamadas</li>
+                            <li>Alucina quando não sabe</li>
+                        </ul>
+                    </div>
+                    <div class="col">
+                        <h3 style="color: var(--color-green);">Agente de IA</h3>
+                        <ul>
+                            <li>Pode usar ferramentas (buscar, calcular)</li>
+                            <li>Toma decisões (qual ferramenta usar?)</li>
+                            <li>Tem memória de conversas anteriores</li>
+                            <li>Executa múltiplos passos sozinho</li>
+                            <li>Planeja antes de responder</li>
+                        </ul>
+                    </div>
+                </div>
+                <p style="font-size: 14px; color: var(--color-muted); margin-top: 16px;">
+                    Agente = LLM + Ferramentas + Memória + Tomada de Decisão
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== 7. O QUE É UM AGENTE ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Anatomia de um Agente</h2>
+                <div class="illustration compact" style="max-width:700px; padding:10px 16px;">
+                    <img src="megabrain_v2/ilustracoes/agent_loop.svg" alt="Ciclo do Agente">
+                </div>
+                <div class="steps" style="margin-top: 10px;">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <h4>Percebe</h4>
+                        <p>Recebe input do usuário e contexto</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <h4>Decide</h4>
+                        <p>Escolhe o que fazer: responder, buscar, calcular</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <h4>Age</h4>
+                        <p>Executa a ação com ferramentas</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">4</div>
+                        <h4>Observa</h4>
+                        <p>Recebe o resultado da ação</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">5</div>
+                        <h4>Responde</h4>
+                        <p>Retorna a resposta final ao usuário</p>
+                    </div>
+                </div>
+                <p style="font-size: 13px; color: var(--color-muted); margin-top: 16px;">
+                    Esse ciclo se repete até o agente decidir que tem uma resposta satisfatória.
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== 8. EXEMPLO DE AGENTE ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Exemplo: Agente com Ferramentas</h2>
+                <div class="illustration wide compact" style="max-width:750px; padding:8px 12px;">
+                    <img src="megabrain_v2/ilustracoes/tool_calling.svg" alt="Tool Calling">
+                </div>
+                <div class="code-block" style="margin-top: 8px; font-size: 13px;">
+<span class="cm"># Usuário pergunta:</span>
+<span class="fn">user</span>: <span class="str">"Qual a cotação do dólar hoje?"</span>
+
+<span class="cm"># O LLM percebe que não sabe a cotação atual.</span>
+<span class="cm"># Mas ele tem acesso a uma ferramenta: buscar_na_web("cotação dólar")</span>
+<span class="cm"># Então ele decide usar a ferramenta:</span>
+<span class="fn">agent</span>: <span class="kw">tool_call</span>(<span class="fn">buscar_na_web</span>, <span class="str">"cotação dólar hoje 27/06/2026"</span>)
+
+<span class="cm"># A ferramenta retorna: "R$ 5,47"</span>
+<span class="cm"># Agora o LLM tem a informação e responde:</span>
+<span class="fn">assistant</span>: <span class="str">"A cotação do dólar hoje (27/06) está em R$ 5,47."</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 9. POR QUE MULTI-AGENTES ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Por que M&uacute;ltiplos Agentes?</h2>
+                <div class="card-grid" style="margin-top: 16px;">
+                    <div class="card">
+                        <div class="card-icon">🎯</div>
+                        <h4>Especialização</h4>
+                        <p>Cada agente é expert em uma área. Um copywriter escreve melhor que um generalista.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">⚡</div>
+                        <h4>Paralelismo</h4>
+                        <p>Vários agentes trabalham ao mesmo tempo. Resultado mais rápido.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">✅</div>
+                        <h4>Qualidade</h4>
+                        <p>Um agente revisor checa o trabalho do copywriter. Menos erros.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">🔄</div>
+                        <h4>Flexibilidade</h4>
+                        <p>Adicione ou remova agentes conforme a tarefa. O sistema se adapta.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 9.5 RAG ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2 style="font-size: clamp(24px, 3.5vw, 42px);">RAG: Como dar superpoderes ao LLM</h2>
+                <p style="font-size: 15px; color: var(--color-muted); margin-top: 0;">
+                    <strong style="color: var(--color-primary);">RAG</strong> (Retrieval Augmented Generation) combina busca em documentos com LLMs para respostas precisas e fundamentadas.
+                </p>
+                <div class="illustration" style="margin-top: 6px;">
+                    <img src="megabrain_v2/ilustracoes/rag.svg" alt="RAG">
+                </div>
+                <p style="font-size: 13px; color: var(--color-muted); margin-top: 4px;">
+                    Sem RAG: LLM alucina. <strong style="color: var(--color-green);">Com RAG: LLM responde com base em dados reais.</strong>
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== 10. O PROBLEMA DO MEGA BRAIN V1 ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Mega Brain v1: O que aprendemos</h2>
+                <div class="comp-table" style="margin-top: 12px;">
+                    <table style="width:100%">
+                        <tr><th>Funcionava</th><th>Não funcionava bem</th></tr>
+                        <tr><td>✅ Roteamento de modelos</td><td>❌ Pipeline era ad-hoc, não um grafo</td></tr>
+                        <tr><td>✅ Dashboard Pixi.js</td><td>❌ Estado espalhado em 3 arquivos JSON</td></tr>
+                        <tr><td>✅ Voice I/O (Whisper + XTTS)</td><td>❌ Execução paralela frágil (asyncio.gather)</td></tr>
+                        <tr><td>✅ Memória persistente</td><td>❌ Sem streaming de texto (só TTS)</td></tr>
+                        <tr><td>✅ OpenRouter multi-modelo</td><td>❌ Sem checkpoint / retry automático</td></tr>
+                        <tr><td></td><td>❌ Código do pipeline desconectado do YAML</td></tr>
+                    </table>
+                </div>
+                <p style="font-size: 14px; color: var(--color-muted); margin-top: 12px;">
+                    Na v2 resolvemos tudo isso com <strong style="color: var(--color-primary);">LangGraph</strong>.
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== PARTE 2: INTRODUÇÃO AO LANGGRAPH ===== -->
+
+        <!-- ===== 11. SECTION: LANGGRAPH ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="bg-glow" style="background: #7C5CFC; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 600px; opacity: 0.08;"></div>
+            <div class="slide-content">
+                <div style="font-size: 14px; color: var(--color-secondary); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px;">Parte 2</div>
+                <h2 style="color: var(--color-secondary);">Introdu&ccedil;&atilde;o ao LangGraph</h2>
+                <p class="slide-subtitle">A biblioteca que transforma agentes em grafos</p>
+            </div>
+        </div>
+
+        <!-- ===== 12. O QUE É LANGGRAPH ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>O que &eacute; LangGraph?</h2>
+                <div style="text-align: left; max-width: 800px; margin-top: 12px;">
+                    <p style="font-size: 17px; line-height: 1.7; color: #ccc; margin-bottom: 16px;">
+                        LangGraph é uma biblioteca Python para criar <strong style="color: var(--color-primary);">grafos de agentes</strong> com estado. 
+                        Em vez de escrever uma função gigante com if/else, você define <strong style="color: var(--color-green);">nós</strong> (etapas) e 
+                        <strong style="color: var(--color-accent);">arestas</strong> (transições entre etapas) como um fluxograma que executa de verdade.
+                    </p>
+                    <div class="card-grid" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="card">
+                            <h4>🗺️ Grafo Explícito</h4>
+                            <p>O fluxo do agente é visível e auditável. Dá até pra gerar diagrama automático.</p>
+                        </div>
+                        <div class="card">
+                            <h4>💾 Checkpoints</h4>
+                            <p>Estado salvo automaticamente. Se falhar, retoma de onde parou.</p>
+                        </div>
+                        <div class="card">
+                            <h4>📡 Streaming</h4>
+                            <p>Cada passo emite eventos. O frontend recebe atualizações em tempo real.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 13. CONCEITOS: STATE, NODES, EDGES ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Conceitos Fundamentais</h2>
+                <div class="two-col" style="margin-top: 12px;">
+                    <div class="col">
+                        <h3 style="color: var(--color-primary);">State (Estado)</h3>
+                        <p style="font-size: 14px; color: var(--color-muted); margin-bottom: 12px;">
+                            Um dicionário que carrega todas as informações entre os nós.
+                        </p>
+                        <div class="code-block" style="font-size: 12px; padding: 14px;">
+<span class="kw">class</span> <span class="fn">AgentState</span>(<span class="fn">TypedDict</span>):
+    messages: <span class="kw">list</span>
+    route: <span class="kw">str</span>
+    tools: <span class="kw">list</span>
+    response: <span class="kw">str</span>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h3 style="color: var(--color-green);">Nodes (Nós)</h3>
+                        <p style="font-size: 14px; color: var(--color-muted); margin-bottom: 12px;">
+                            Funções Python que recebem o estado e retornam atualizações.
+                        </p>
+                        <div class="code-block" style="font-size: 12px; padding: 14px;">
+<span class="kw">def</span> <span class="fn">classify_route</span>(state):
+    msg = state[<span class="str">"messages"</span>][-<span class="num">1</span>]
+    <span class="kw">if</span> <span class="str">"complexo"</span> <span class="kw">in</span> msg:
+        <span class="kw">return</span> {<span class="str">"route"</span>: <span class="str">"complex"</span>}
+    <span class="kw">return</span> {<span class="str">"route"</span>: <span class="str">"simple"</span>}
+                        </div>
+                    </div>
+                </div>
+                <p style="font-size: 14px; color: var(--color-muted); margin-top: 8px;">
+                    <strong style="color: var(--color-accent);">Edges (Arestas):</strong> conectam nós. Podem ser fixas ou condicionais (roteamento).
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== 14. CONDITIONAL EDGES + CHECKPOINTS ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Conditional Edges &amp; Checkpoints</h2>
+                <div style="text-align: left; max-width: 800px; margin-top: 12px;">
+                    <h3 style="color: var(--color-accent); margin-bottom: 6px;">Conditional Edges (Roteamento)</h3>
+                    <div class="code-block" style="font-size: 13px; padding: 16px; margin-bottom: 16px;">
+<span class="cm"># Depois de classificar, decide pra onde ir:</span>
+graph.<span class="fn">add_conditional_edges</span>(
+    <span class="str">"classify_route"</span>,         <span class="cm"># nó de origem</span>
+    <span class="fn">decide_route</span>,               <span class="cm"># função de decisão</span>
+    {
+        <span class="str">"simple"</span>: <span class="str">"respond_fast"</span>,    <span class="cm"># se rota=simple → respond_fast</span>
+        <span class="str">"medium"</span>: <span class="str">"respond_medium"</span>,
+        <span class="str">"complex"</span>: <span class="str">"squad_fanout"</span>    <span class="cm"># se rota=complex → time de agentes</span>
+    }
+)
+                    </div>
+                    <h3 style="color: var(--color-green); margin-bottom: 6px;">Checkpoints (Persistência)</h3>
+                    <p style="font-size: 14px; color: var(--color-muted);">
+                        LangGraph salva o estado após cada nó. Se o processo falhar no meio, você retoma exatamente de onde parou.
+                        Funciona com SQLite, Postgres ou qualquer storage.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 15. FAN-OUT COM SEND API ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Paralelismo com Send API</h2>
+                <div class="illustration wide compact" style="max-width:780px; padding:10px 16px;">
+                    <img src="megabrain_v2/ilustracoes/multi_agent_parallel.svg" alt="Send API">
+                </div>
+                <div style="text-align: left; max-width: 800px; margin-top: 8px;">
+                    <p style="font-size: 14px; color: #ccc; margin-bottom: 8px;">
+                        Código equivalente — declarativo, sem gerenciar threads:
+                    </p>
+                    <div class="code-block" style="font-size: 13px; padding: 16px;">
+<span class="kw">from</span> langgraph.types <span class="kw">import</span> Send
+
+<span class="kw">def</span> <span class="fn">fanout_agents</span>(state):
+    <span class="cm"># Dispara 3 agentes em paralelo</span>
+    <span class="kw">return</span> [
+        Send(<span class="str">"run_agent"</span>, {<span class="str">"agent"</span>: <span class="str">"copywriter"</span>, <span class="str">"task"</span>: state[<span class="str">"task"</span>]}),
+        Send(<span class="str">"run_agent"</span>, {<span class="str">"agent"</span>: <span class="str">"strategist"</span>, <span class="str">"task"</span>: state[<span class="str">"task"</span>]}),
+        Send(<span class="str">"run_agent"</span>, {<span class="str">"agent"</span>: <span class="str">"reviewer"</span>, <span class="str">"task"</span>: state[<span class="str">"task"</span>]}),
+    ]
+
+<span class="kw">def</span> <span class="fn">run_agent</span>(state):
+    result = <span class="fn">call_llm</span>(state[<span class="str">"agent"</span>], state[<span class="str">"task"</span>])
+    <span class="kw">return</span> {<span class="str">"results"</span>: [result]}
+
+<span class="kw">def</span> <span class="fn">consolidate</span>(state):
+    final = <span class="str">"\n\n"</span>.<span class="fn">join</span>(state[<span class="str">"results"</span>])
+    <span class="kw">return</span> {<span class="str">"response"</span>: final}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 16. ARQUITETURA MEGA BRAIN V2 ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Arquitetura do Mega Brain v2</h2>
+                <div class="illustration" style="margin-top: 10px;">
+                    <img src="megabrain_v2/ilustracoes/langgraph_flow.svg" alt="LangGraph Flow">
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 17. COMPARAÇÃO V1 vs V2 ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>v1 vs v2 em C&oacute;digo</h2>
+                <div class="two-col" style="margin-top: 12px;">
+                    <div class="col">
+                        <h3 style="color: #FF6B6B;">v1 — Função Monolítica</h3>
+                        <div class="code-block" style="font-size: 12px; padding: 14px;">
+<span class="kw">async def</span> <span class="fn">handle_process</span>(req):
+    text = req[<span class="str">"text"</span>]
+    route = <span class="fn">router.route</span>(text)
+    model = route.model
+    <span class="kw">if</span> route.level == <span class="str">"mega_brain"</span>:
+        results = <span class="kw">await</span> <span class="fn">asyncio</span>.gather(
+            <span class="fn">call_agent</span>(<span class="str">"c1"</span>),
+            <span class="fn">call_agent</span>(<span class="str">"c2"</span>),
+            ...
+        )
+        final = <span class="fn">consolidate</span>(results)
+    <span class="kw">else</span>:
+        final = <span class="kw">await</span> <span class="fn">openrouter</span>.chat(
+            model, text
+        )
+    <span class="kw">return</span> final
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h3 style="color: var(--color-green);">v2 — Grafo Declarativo</h3>
+                        <div class="code-block" style="font-size: 12px; padding: 14px;">
+<span class="cm"># Cada etapa é um nó do grafo</span>
+graph = StateGraph(AgentState)
+
+graph.<span class="fn">add_node</span>(<span class="str">"classify"</span>, classify_route)
+graph.<span class="fn">add_node</span>(<span class="str">"fast"</span>, respond_fast)
+graph.<span class="fn">add_node</span>(<span class="str">"standard"</span>, respond_std)
+graph.<span class="fn">add_node</span>(<span class="str">"premium"</span>, respond_premium)
+graph.<span class="fn">add_node</span>(<span class="str">"fanout"</span>, fanout_agents)
+graph.<span class="fn">add_node</span>(<span class="str">"agent"</span>, run_agent)
+graph.<span class="fn">add_node</span>(<span class="str">"consolidate"</span>, consolidate)
+graph.<span class="fn">add_node</span>(<span class="str">"respond"</span>, respond)
+
+<span class="cm"># Conecta com roteamento condicional</span>
+graph.<span class="fn">add_conditional_edges</span>(
+    <span class="str">"classify"</span>, decide_route, {
+        <span class="str">"fast"</span>: <span class="str">"fast"</span>,
+        <span class="str">"standard"</span>: <span class="str">"standard"</span>,
+        <span class="str">"premium"</span>: <span class="str">"premium"</span>,
+        <span class="str">"squad"</span>: <span class="str">"fanout"</span>,
+    }
+)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 18. TRANSIÇÃO: MÃO NA MASSA ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="bg-glow" style="background: #FFD700; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 600px; opacity: 0.07;"></div>
+            <div class="slide-content">
+                <div style="font-size: 14px; color: var(--color-accent); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px;">Parte 3</div>
+                <h2 class="slide-title warm">M&atilde;o na Massa</h2>
+                <p class="slide-subtitle">Vamos construir o Mega Brain v2 passo a passo</p>
+                <div style="display: flex; gap: 12px; margin-top: 16px;">
+                    <span class="tag gold">Python</span>
+                    <span class="tag purple">LangGraph</span>
+                    <span class="tag cyan">Live Coding</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 19. PASSO 1: SETUP ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Passo 1: Setup do Projeto</h2>
+                <div class="code-block" style="margin-top: 12px; font-size: 14px;">
+<span class="cm"># Criar ambiente virtual</span>
+python -m venv .venv
+<span class="kw">source</span> .venv/bin/activate
+
+<span class="cm"># Instalar dependências</span>
+pip install langgraph langchain-openai httpx python-dotenv
+
+<span class="cm"># Estrutura de diretórios</span>
+megabrain_v2/
+├── graph.py          <span class="cm"># O grafo principal</span>
+├── state.py          <span class="cm"># Definição do estado</span>
+├── nodes/
+│   ├── __init__.py
+│   ├── classify.py   <span class="cm"># Roteamento</span>
+│   ├── respond.py    <span class="cm"># Respostas</span>
+│   ├── squad.py      <span class="cm"># Squad fan-out</span>
+│   └── tools.py      <span class="cm"># Ferramentas</span>
+├── config.py         <span class="cm"># Configuração</span>
+└── server.py         <span class="cm"># API HTTP</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 20. PASSO 2: STATE ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Passo 2: Definindo o Estado</h2>
+                <div class="code-block" style="margin-top: 12px; font-size: 13px;">
+<span class="kw">from</span> typing <span class="kw">import</span> TypedDict, Annotated, Literal
+<span class="kw">from</span> langgraph.graph.message <span class="kw">import</span> add_messages
+<span class="kw">from</span> langchain_core.messages <span class="kw">import</span> BaseMessage
+
+<span class="kw">class</span> <span class="fn">AgentState</span>(TypedDict):
+    <span class="cm"># Mensagens da conversa (com reducer add_messages)</span>
+    messages: Annotated[<span class="kw">list</span>, add_messages]
+
+    <span class="cm"># Rota decidida pelo classificador</span>
+    route: <span class="kw">str</span>
+
+    <span class="cm"># Sentimento do usuário</span>
+    sentiment: <span class="kw">str</span>
+
+    <span class="cm"># Nível de complexidade</span>
+    complexity: <span class="kw">str</span>
+
+    <span class="cm"># Resultado dos agentes do squad</span>
+    squad_results: Annotated[<span class="kw">list</span>, <span class="fn">reducer_merge</span>]
+
+    <span class="cm"># Resposta final para o usuário</span>
+    response: <span class="kw">str</span>
+                </div>
+                <p style="font-size: 13px; color: var(--color-muted); margin-top: 10px;">
+                    <strong>Tip:</strong> <code>add_messages</code> faz append automático de mensagens. <code>Annotated</code> define reducers para cada campo.
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== 21. PASSO 3: CLASSIFY ROUTE ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Passo 3: N&oacute; de Classifica&ccedil;&atilde;o</h2>
+                <div class="code-block" style="margin-top: 12px; font-size: 13px;">
+<span class="kw">import</span> re
+
+ROUTES = {
+    <span class="str">"squad"</span>: [<span class="str">"mega brain"</span>, <span class="str">"overdrive"</span>, <span class="str">"modo deus"</span>,
+                <span class="str">"squad"</span>, <span class="str">"todos os agentes"</span>],
+    <span class="str">"premium"</span>: [<span class="str">"deep research"</span>, <span class="str">"análise profunda"</span>],
+    <span class="str">"standard"</span>: [<span class="str">"analise"</span>, <span class="str">"estratégia"</span>, <span class="str">"brain"</span>],
+}
+
+<span class="kw">def</span> <span class="fn">classify_route</span>(state: AgentState) -> AgentState:
+    msg = state[<span class="str">"messages"</span>][-<span class="num">1</span>].content.lower()
+
+    <span class="kw">for</span> route, keywords <span class="kw">in</span> ROUTES.items():
+        <span class="kw">if</span> <span class="fn">any</span>(kw <span class="kw">in</span> msg <span class="kw">for</span> kw <span class="kw">in</span> keywords):
+            <span class="kw">return</span> {<span class="str">"route"</span>: route}
+
+    <span class="cm"># Análise de complexidade por heurística</span>
+    words = <span class="fn">len</span>(msg.split())
+    <span class="kw">if</span> words > <span class="num">200</span>:
+        <span class="kw">return</span> {<span class="str">"route"</span>: <span class="str">"premium"</span>}
+
+    <span class="kw">return</span> {<span class="str">"route"</span>: <span class="str">"fast"</span>}  <span class="cm"># default</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 22. PASSO 4: NÓS DE RESPOSTA ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Passo 4: N&oacute;s de Resposta</h2>
+                <div class="code-block" style="margin-top: 12px; font-size: 13px;">
+MODELS = {
+    <span class="str">"fast"</span>: <span class="str">"google/gemini-2.5-flash-lite"</span>,
+    <span class="str">"standard"</span>: <span class="str">"openai/gpt-4o"</span>,
+    <span class="str">"premium"</span>: <span class="str">"anthropic/claude-sonnet-4"</span>,
+}
+
+<span class="kw">async def</span> <span class="fn">respond</span>(state: AgentState) -> AgentState:
+    route = state[<span class="str">"route"</span>]
+    model_id = MODELS.get(route, MODELS[<span class="str">"fast"</span>])
+    messages = state[<span class="str">"messages"</span>]
+
+    <span class="cm"># Prepara system prompt com contexto</span>
+    system = get_system_prompt(route)
+    full_messages = [system] + messages
+
+    <span class="cm"># Chama o LLM via OpenRouter</span>
+    response = <span class="kw">await</span> <span class="fn">call_openrouter</span>(
+        model=model_id,
+        messages=full_messages,
+        tools=TOOLS,  <span class="cm"># search, calculate, memory</span>
+    )
+
+    <span class="kw">return</span> {<span class="str">"response"</span>: response, <span class="str">"messages"</span>: [response]}
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 23. PASSO 5: SQUAD FANOUT ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Passo 5: Squad Fan-Out</h2>
+                <div class="code-block" style="margin-top: 12px; font-size: 13px;">
+AGENTS = {
+    <span class="str">"copywriter"</span>: <span class="str">"Escreva copy persuasiva para: "</span>,
+    <span class="str">"strategist"</span>: <span class="str">"Crie estratégia de marketing para: "</span>,
+    <span class="str">"social"</span>: <span class="str">"Adapte para redes sociais: "</span>,
+    <span class="str">"reviewer"</span>: <span class="str">"Revise e melhore este texto: "</span>,
+}
+
+<span class="kw">def</span> <span class="fn">fanout_agents</span>(state: AgentState):
+    task = state[<span class="str">"messages"</span>][-<span class="num">1</span>].content
+    <span class="kw">return</span> [
+        Send(<span class="str">"run_agent"</span>, {<span class="str">"agent"</span>: name, <span class="str">"task"</span>: task})
+        <span class="kw">for</span> name <span class="kw">in</span> AGENTS
+    ]
+
+<span class="kw">async def</span> <span class="fn">run_agent</span>(state: AgentState) -> AgentState:
+    agent = state[<span class="str">"agent"</span>]
+    task = state[<span class="str">"task"</span>]
+    prompt = AGENTS[agent] + task
+    result = <span class="kw">await</span> <span class="fn">call_openrouter</span>(
+        model=<span class="str">"openai/gpt-4o-mini"</span>,
+        messages=[{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: prompt}]
+    )
+    <span class="kw">return</span> {<span class="str">"squad_results"</span>: [{<span class="str">"agent"</span>: agent, <span class="str">"result"</span>: result}]}
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 24. PASSO 6: CONSOLIDATE + RESPOND ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Passo 6: Consolidar Resultados</h2>
+                <div class="code-block" style="margin-top: 12px; font-size: 13px;">
+<span class="kw">async def</span> <span class="fn">consolidate</span>(state: AgentState) -> AgentState:
+    results = state[<span class="str">"squad_results"</span>]
+
+    <span class="cm"># Junta resultados de todos os agentes</span>
+    combined = <span class="str">"\n---\n"</span>.join(
+        <span class="str">f"### {r['agent'].upper()}\n{r['result']}"</span>
+        <span class="kw">for</span> r <span class="kw">in</span> results
+    )
+
+    <span class="cm"># Passa pelo copy-chief para unificar</span>
+    final = <span class="kw">await</span> <span class="fn">call_openrouter</span>(
+        model=<span class="str">"anthropic/claude-sonnet-4"</span>,
+        messages=[{
+            <span class="str">"role"</span>: <span class="str">"system"</span>,
+            <span class="str">"content"</span>: <span class="str">"Você é o Copy Chief. Consolide os trabalhos dos agentes em uma resposta final coesa."</span>
+        }, {
+            <span class="str">"role"</span>: <span class="str">"user"</span>,
+            <span class="str">"content"</span>: combined
+        }]
+    )
+
+    <span class="kw">return</span> {<span class="str">"response"</span>: final, <span class="str">"messages"</span>: [final]}
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 25. PASSO 7: MONTANDO O GRAFO ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Passo 7: Montando o Grafo</h2>
+                <div class="code-block" style="margin-top: 12px; font-size: 13px;">
+<span class="kw">from</span> langgraph.graph <span class="kw">import</span> StateGraph, START, END
+<span class="kw">from</span> langgraph.checkpoint.memory <span class="kw">import</span> MemorySaver
+
+<span class="kw">def</span> <span class="fn">decide_route</span>(state: AgentState) -> <span class="kw">str</span>:
+    <span class="kw">return</span> state[<span class="str">"route"</span>]  <span class="cm"># "fast" | "standard" | "premium" | "squad"</span>
+
+<span class="kw">def</span> <span class="fn">build_graph</span>() -> StateGraph:
+    graph = StateGraph(AgentState)
+
+    <span class="cm"># Adiciona nós</span>
+    graph.<span class="fn">add_node</span>(<span class="str">"classify"</span>, classify_route)
+    graph.<span class="fn">add_node</span>(<span class="str">"respond"</span>, respond)
+    graph.<span class="fn">add_node</span>(<span class="str">"fanout"</span>, fanout_agents)
+    graph.<span class="fn">add_node</span>(<span class="str">"run_agent"</span>, run_agent)
+    graph.<span class="fn">add_node</span>(<span class="str">"consolidate"</span>, consolidate)
+
+    <span class="cm"># Conecta</span>
+    graph.<span class="fn">add_edge</span>(START, <span class="str">"classify"</span>)
+
+    <span class="cm"># Roteamento condicional</span>
+    graph.<span class="fn">add_conditional_edges</span>(
+        <span class="str">"classify"</span>, decide_route, {
+            <span class="str">"fast"</span>: <span class="str">"respond"</span>,
+            <span class="str">"standard"</span>: <span class="str">"respond"</span>,
+            <span class="str">"premium"</span>: <span class="str">"respond"</span>,
+            <span class="str">"squad"</span>: <span class="str">"fanout"</span>,
+        }
+    )
+
+    graph.<span class="fn">add_conditional_edges</span>(
+        <span class="str">"fanout"</span>, <span class="kw">lambda</span> s: [
+            Send(<span class="str">"run_agent"</span>, {<span class="str">"agent"</span>: a, <span class="str">"task"</span>: s[<span class="str">"messages"</span>][-<span class="num">1</span>].content})
+            <span class="kw">for</span> a <span class="kw">in</span> AGENTS
+        ]
+    )
+
+    graph.<span class="fn">add_edge</span>(<span class="str">"run_agent"</span>, <span class="str">"consolidate"</span>)
+    graph.<span class="fn">add_edge</span>(<span class="str">"consolidate"</span>, END)
+    graph.<span class="fn">add_edge</span>(<span class="str">"respond"</span>, END)
+
+    <span class="kw">return</span> graph.<span class="fn">compile</span>(checkpointer=MemorySaver())
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 26. EXECUTANDO ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Executando o Mega Brain</h2>
+                <div class="code-block" style="margin-top: 12px; font-size: 14px;">
+<span class="kw">import</span> asyncio
+<span class="kw">from</span> graph <span class="kw">import</span> build_graph
+
+<span class="kw">async def</span> <span class="fn">main</span>():
+    app = build_graph()
+
+    <span class="cm"># Configuração da execução</span>
+    config = {<span class="str">"configurable"</span>: {<span class="str">"thread_id"</span>: <span class="str">"session-123"</span>}}
+
+    <span class="cm"># Streaming: cada evento mostra o progresso</span>
+    <span class="kw">async for</span> event <span class="kw">in</span> app.astream(
+        {<span class="str">"messages"</span>: [<span class="str">"Crie uma campanha de marketing para o Café com Dados"</span>]},
+        config,
+        stream_mode=<span class="str">"updates"</span>
+    ):
+        node_name = <span class="fn">list</span>(event.keys())[<span class="num">0</span>]
+        print(<span class="str">f"✓ {node_name} concluído"</span>)
+
+    <span class="cm"># Resultado final</span>
+    state = <span class="kw">await</span> app.aget_state(config)
+    print(<span class="str">"\n=== RESPOSTA FINAL ===\n"</span>)
+    print(state.values[<span class="str">"response"</span>])
+
+asyncio.<span class="fn">run</span>(main())
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 27. DASHBOARD ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Dashboard: Visualizando o Grafo</h2>
+                <div class="card-grid" style="grid-template-columns: repeat(3, 1fr); margin-top: 12px;">
+                    <div class="card">
+                        <div class="card-icon">🌐</div>
+                        <h4>API HTTP</h4>
+                        <p>FastAPI expõe o grafo como endpoint REST + WebSocket para streaming</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">📊</div>
+                        <h4>Pixi.js Dashboard</h4>
+                        <p>Visualização em tempo real: agentes como nós, dados fluindo pelas arestas</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">🗺️</div>
+                        <h4>Grafo Automático</h4>
+                        <p><code>graph.get_graph().draw_mermaid_png()</code> gera diagrama do fluxo</p>
+                    </div>
+                </div>
+                <p style="font-size: 14px; color: var(--color-muted); margin-top: 16px;">
+                    O dashboard da v1 continua funcionando — mas agora alimentado por eventos reais do grafo.
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== 28. RECURSOS DO LANGGRAPH ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Recursos do LangGraph</h2>
+                <div class="card-grid" style="margin-top: 12px;">
+                    <div class="card">
+                        <div class="card-icon">🔄</div>
+                        <h4>Human-in-the-Loop</h4>
+                        <p>Pare o grafo em qualquer nó e espere aprovação humana antes de continuar.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">⏪</div>
+                        <h4>Time Travel</h4>
+                        <p>Volte para qualquer checkpoint anterior e replique a partir dali.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">🧩</div>
+                        <h4>Subgrafos</h4>
+                        <p>Encapsule lógica complexa em subgrafos reutilizáveis.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">📦</div>
+                        <h4>LangGraph Platform</h4>
+                        <p>Deploy em produção com servidor incluído, monitoramento e tracing.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 29. PRÓXIMOS PASSOS ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content">
+                <h2>Pr&oacute;ximos Passos</h2>
+                <div class="steps" style="margin-top: 16px;">
+                    <div class="step">
+                        <div class="step-num" style="background: linear-gradient(135deg, #00FF88, #00D4FF);">1</div>
+                        <h4>RAG / Memória</h4>
+                        <p>Vector store com embeddings para busca semântica</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-num" style="background: linear-gradient(135deg, #FFD700, #FF6B6B);">2</div>
+                        <h4>Voice I/O</h4>
+                        <p>Integrar Whisper STT e TTS como nós do grafo</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-num" style="background: linear-gradient(135deg, #7C5CFC, #00D4FF);">3</div>
+                        <h4>MCP Tools</h4>
+                        <p>Model Context Protocol para ferramentas padronizadas</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-num" style="background: linear-gradient(135deg, #FF6B6B, #FFD700);">4</div>
+                        <h4>Deploy</h4>
+                        <p>LangGraph Platform ou Docker self-hosted</p>
+                    </div>
+                </div>
+                <div class="code-block" style="margin-top: 16px; font-size: 13px; text-align: center;">
+<span class="cm"># Repositório do projeto</span>
+github.com/rodolfo/megabrain_v2
+
+<span class="cm"># Comunidade no Discord</span>
+discord.gg/cafecomdados
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 30. ENCERRAMENTO ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="bg-glow" style="background: #00D4FF; top: -100px; left: -100px;"></div>
+            <div class="bg-glow" style="background: #7C5CFC; bottom: -100px; right: -100px;"></div>
+            <div class="slide-content">
+                <h2 class="slide-title">Obrigado!</h2>
+                <p class="slide-subtitle" style="margin-top: 8px;">Dúvidas? Vamos conversar.</p>
+                <div style="margin-top: 24px; display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;">
+                    <span class="tag cyan">#CafeComDados</span>
+                    <span class="tag purple">#MegaBrain</span>
+                    <span class="tag gold">#LangGraph</span>
+                    <span class="tag green">#IA</span>
+                </div>
+                <p style="margin-top: 32px; font-size: 14px; color: var(--color-muted);">
+                    Próximo encontro: Julho 2026<br>
+                    Fiquem ligados no grupo!
+                </p>
+            </div>
+        </div>
+
+    </div><!-- /.slide-deck -->
+
+    <!-- Navigation -->
+    <div class="nav-controls">
+        <button class="nav-btn" onclick="prevSlide()">←</button>
+        <span class="slide-counter"><span id="current">1</span> / <span id="total">30</span></span>
+        <button class="nav-btn" onclick="nextSlide()">→</button>
+    </div>
+
+    <script>
+        let current = 1;
+        const slides = document.querySelectorAll('.slide');
+        const total = slides.length;
+        document.getElementById('total').textContent = total;
+
+        function showSlide(n) {
+            if (n < 1) n = 1;
+            if (n > total) n = total;
+            current = n;
+            slides.forEach((s, i) => {
+                s.classList.toggle('active', i === n - 1);
+                if (i === n - 1) {
+                    s.querySelectorAll('.animate-stagger > *').forEach(el => el.style.animation = 'none');
+                }
+            });
+            document.getElementById('current').textContent = n;
+            document.getElementById('progressBar').style.width = (n / total * 100) + '%';
+        }
+
+        function nextSlide() { showSlide(current + 1); }
+        function prevSlide() { showSlide(current - 1); }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.nav-controls')) nextSlide();
+        });
+
+        showSlide(1);
+    </script>
+</body>
+</html>

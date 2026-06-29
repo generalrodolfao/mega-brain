@@ -1,0 +1,86 @@
+name: copy-chief-pipeline
+description: Pipeline de execução completa do Copy Chief Squad
+version: 1.0.0
+framework: opensquad
+
+steps:
+  - id: voice-input
+    name: Captura de Voz
+    description: >
+      Recebe entrada de áudio, transcreve com Whisper STT
+      e prepara o texto para processamento.
+    agent: copy-chief
+    tools:
+      - whisper-stt
+      - audio-normalizer
+    output: text_raw
+
+  - id: sentiment-router
+    name: Roteador de Sentimento
+    description: >
+      Classifica a intenção e complexidade da entrada.
+      Detecta palavras-chave como "mega brain", "brain"
+      e nível de urgência/sentimento.
+    agent: copy-chief
+    model: gpt-4o-mini
+    tools:
+      - sentiment-classifier
+      - keyword-detector
+    input: text_raw
+    output: route_decision
+
+  - id: model-router
+    name: Roteador de Modelo
+    description: >
+      Baseado na decisão do router, seleciona o modelo LLM:
+      - "normal" → Gemini Flash (econômico, rápido)
+      - "brain" → GPT-4o (intermediário)
+      - "mega brain" → Claude Opus + squad completo
+    condition:
+      if: route_decision.level == "mega_brain"
+      then: activate_squad
+      else: direct_response
+    input: route_decision
+    output: model_selection
+
+  - id: activate-squad
+    name: Ativar Copy Chief Squad
+    description: >
+      Ativa os 7 agentes do squad em paralelo:
+      Strategist, Copywriter, Social Media, Designer,
+      SEO/Media e Reviewer, coordenados pelo Copy Chief.
+    condition:
+      only_if: model_selection == "squad_full"
+    agents:
+      - strategist
+      - copywriter
+      - social-media
+      - designer-text
+      - seo-media
+    parallel: true
+    input: text_raw
+    output: agent_deliverables
+
+  - id: consolidate
+    name: Consolidar e Revisar
+    description: >
+      Copy Chief consolida as entregas de todos os agentes.
+      Reviewer verifica qualidade e consistência.
+      Copy Chief aprova e entrega pacote final.
+    agents:
+      - copy-chief
+      - reviewer
+    input: agent_deliverables
+    output: final_package
+
+  - id: dashboard-update
+    name: Atualizar Dashboard
+    description: >
+      Escreve state.json com o resultado da execução
+      e notifica o dashboard Pixi.js via WebSocket.
+    agent: copy-chief
+    tools:
+      - state-writer
+      - websocket-emitter
+    input: final_package
+    output: state_updated

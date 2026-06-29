@@ -1,0 +1,145 @@
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <style>
+      .title { font-family: 'Arial', sans-serif; font-size: 24px; font-weight: bold; fill: #FFFFFF; }
+      .subtitle { font-family: 'Arial', sans-serif; font-size: 14px; fill: #B0B0B0; }
+      .text { font-family: 'Arial', sans-serif; font-size: 12px; fill: #FFFFFF; }
+      .small-text { font-family: 'Arial', sans-serif; font-size: 10px; fill: #A0A0A0; }
+      .token { font-family: 'Courier New', monospace; font-size: 11px; fill: #00D4FF; }
+      .number { font-family: 'Courier New', monospace; font-size: 11px; fill: #FFB800; }
+      .vector { font-family: 'Courier New', monospace; font-size: 9px; fill: #00FF88; }
+      .arrow { stroke: #4A9EFF; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .box { fill: none; stroke: #333333; stroke-width: 1; rx: 4; }
+      .highlight-box { fill: #1A1A2E; stroke: #4A9EFF; stroke-width: 1; rx: 4; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4A9EFF" />
+    </marker>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="500" fill="#0A0A0F"/>
+  
+  <!-- Title -->
+  <text x="400" y="30" text-anchor="middle" class="title">Tokenização &amp; Embeddings</text>
+  
+  <!-- Step 1: Input Text -->
+  <rect x="20" y="60" width="150" height="40" class="highlight-box"/>
+  <text x="95" y="75" text-anchor="middle" class="subtitle">Texto de Entrada</text>
+  <text x="95" y="90" text-anchor="middle" class="text">"Construindo um Mega Brain com IA"</text>
+  
+  <!-- Arrow 1 -->
+  <line x1="170" y1="80" x2="200" y2="80" class="arrow"/>
+  
+  <!-- Step 2: Tokenizer -->
+  <rect x="210" y="60" width="120" height="40" class="highlight-box"/>
+  <text x="270" y="75" text-anchor="middle" class="subtitle">Tokenizador</text>
+  <text x="270" y="90" text-anchor="middle" class="small-text">Divisão em tokens</text>
+  
+  <!-- Arrow 2 -->
+  <line x1="330" y1="80" x2="360" y2="80" class="arrow"/>
+  
+  <!-- Step 3: Tokens -->
+  <rect x="370" y="50" width="200" height="60" class="highlight-box"/>
+  <text x="470" y="65" text-anchor="middle" class="subtitle">Tokens</text>
+  <text x="380" y="80" class="token">["Constru", "indo", "um",</text>
+  <text x="380" y="95" class="token"> "Mega", "Brain", "com", "IA"]</text>
+  
+  <!-- Arrow 3 -->
+  <line x1="470" y1="110" x2="470" y2="140" class="arrow"/>
+  
+  <!-- Step 4: Token IDs -->
+  <rect x="370" y="150" width="200" height="60" class="highlight-box"/>
+  <text x="470" y="165" text-anchor="middle" class="subtitle">IDs dos Tokens</text>
+  <text x="380" y="180" class="number">[2847, 1194, 482,</text>
+  <text x="380" y="195" class="number"> 8932, 7201, 841, 3147]</text>
+  
+  <!-- Arrow 4 -->
+  <line x1="470" y1="210" x2="470" y2="240" class="arrow"/>
+  
+  <!-- Step 5: Embedding Matrix -->
+  <rect x="20" y="250" width="760" height="120" class="highlight-box"/>
+  <text x="400" y="270" text-anchor="middle" class="subtitle">Matriz de Embeddings (Lookup)</text>
+  
+  <!-- Token ID boxes -->
+  <rect x="40" y="285" width="50" height="25" class="box"/>
+  <text x="65" y="300" text-anchor="middle" class="number">2847</text>
+  
+  <rect x="120" y="285" width="50" height="25" class="box"/>
+  <text x="145" y="300" text-anchor="middle" class="number">1194</text>
+  
+  <rect x="200" y="285" width="50" height="25" class="box"/>
+  <text x="225" y="300" text-anchor="middle" class="number">482</text>
+  
+  <rect x="280" y="285" width="50" height="25" class="box"/>
+  <text x="305" y="300" text-anchor="middle" class="number">8932</text>
+  
+  <rect x="360" y="285" width="50" height="25" class="box"/>
+  <text x="385" y="300" text-anchor="middle" class="number">7201</text>
+  
+  <rect x="440" y="285" width="50" height="25" class="box"/>
+  <text x="465" y="300" text-anchor="middle" class="number">841</text>
+  
+  <rect x="520" y="285" width="50" height="25" class="box"/>
+  <text x="545" y="300" text-anchor="middle" class="number">3147</text>
+  
+  <!-- Arrows to vectors -->
+  <line x1="65" y1="310" x2="65" y2="325" class="arrow"/>
+  <line x1="145" y1="310" x2="145" y2="325" class="arrow"/>
+  <line x1="225" y1="310" x2="225" y2="325" class="arrow"/>
+  <line x1="305" y1="310" x2="305" y2="325" class="arrow"/>
+  <line x1="385" y1="310" x2="385" y2="325" class="arrow"/>
+  <line x1="465" y1="310" x2="465" y2="325" class="arrow"/>
+  <line x1="545" y1="310" x2="545" y2="325" class="arrow"/>
+  
+  <!-- Vector embeddings (simplified 4D) -->
+  <rect x="40" y="330" width="50" height="30" class="box"/>
+  <text x="65" y="340" text-anchor="middle" class="vector">[0.23</text>
+  <text x="65" y="350" text-anchor="middle" class="vector">-0.81</text>
+  <text x="65" y="355" text-anchor="middle" class="vector">...]</text>
+  
+  <rect x="120" y="330" width="50" height="30" class="box"/>
+  <text x="145" y="340" text-anchor="middle" class="vector">[0.67</text>
+  <text x="145" y="350" text-anchor="middle" class="vector">0.12</text>
+  <text x="145" y="355" text-anchor="middle" class="vector">...]</text>
+  
+  <rect x="200" y="330" width="50" height="30" class="box"/>
+  <text x="225" y="340" text-anchor="middle" class="vector">[-0.45</text>
+  <text x="225" y="350" text-anchor="middle" class="vector">0.89</text>
+  <text x="225" y="355" text-anchor="middle" class="vector">...]</text>
+  
+  <rect x="280" y="330" width="50" height="30" class="box"/>
+  <text x="305" y="340" text-anchor="middle" class="vector">[0.91</text>
+  <text x="305" y="350" text-anchor="middle" class="vector">-0.33</text>
+  <text x="305" y="355" text-anchor="middle" class="vector">...]</text>
+  
+  <rect x="360" y="330" width="50" height="30" class="box"/>
+  <text x="385" y="340" text-anchor="middle" class="vector">[0.15</text>
+  <text x="385" y="350" text-anchor="middle" class="vector">0.76</text>
+  <text x="385" y="355" text-anchor="middle" class="vector">...]</text>
+  
+  <rect x="440" y="330" width="50" height="30" class="box"/>
+  <text x="465" y="340" text-anchor="middle" class="vector">[-0.62</text>
+  <text x="465" y="350" text-anchor="middle" class="vector">0.41</text>
+  <text x="465" y="355" text-anchor="middle" class="vector">...]</text>
+  
+  <rect x="520" y="330" width="50" height="30" class="box"/>
+  <text x="545" y="340" text-anchor="middle" class="vector">[0.88</text>
+  <text x="545" y="350" text-anchor="middle" class="vector">-0.19</text>
+  <text x="545" y="355" text-anchor="middle" class="vector">...]</text>
+  
+  <!-- Final result -->
+  <rect x="600" y="280" width="160" height="80" class="highlight-box"/>
+  <text x="680" y="295" text-anchor="middle" class="subtitle">Embeddings Vetoriais</text>
+  <text x="680" y="310" text-anchor="middle" class="small-text">Cada token → vetor 768D</text>
+  <text x="680" y="325" text-anchor="middle" class="small-text">Representação numérica</text>
+  <text x="680" y="340" text-anchor="middle" class="small-text">densa do significado</text>
+  <text x="680" y="355" text-anchor="middle" class="small-text">semântico</text>
+  
+  <!-- Info box -->
+  <rect x="20" y="390" width="760" height="80" class="box"/>
+  <text x="30" y="410" class="subtitle">Pipeline de Tokenização:</text>
+  <text x="30" y="430" class="small-text">1. Texto bruto é dividido em tokens (subpalavras ou palavras)</text>
+  <text x="30" y="445" class="small-text">2. Cada token é mapeado para um ID numérico único no vocabulário</text>
+  <text x="30" y="460" class="small-text">3. Os IDs são usados para buscar vetores de embedding pré-treinados na matriz</text>
+</svg>

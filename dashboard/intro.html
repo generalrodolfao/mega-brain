@@ -1,0 +1,468 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEGA BRAIN | Sistema de IA Avançado</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.2.4/pixi.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        :root {
+            --bg: #050508;
+            --surface: #0D0D14;
+            --gold: #FFD700;
+            --green: #00FF88;
+            --purple: #7C5CFC;
+            --red: #FF3355;
+            --text: #F0F0F8;
+            --muted: #666688;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        #neural-network {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(ellipse at center, rgba(124, 92, 252, 0.1) 0%, rgba(5, 5, 8, 0.95) 70%);
+        }
+
+        .boot-sequence {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: var(--bg);
+            z-index: 10;
+            transition: all 1s ease-out;
+        }
+
+        .boot-sequence.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .boot-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            color: var(--green);
+            text-shadow: 0 0 10px var(--green);
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite;
+        }
+
+        .progress-container {
+            width: 400px;
+            height: 4px;
+            background: rgba(0, 255, 136, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--green), var(--gold));
+            width: 0%;
+            transition: width 0.1s ease-out;
+            box-shadow: 0 0 10px var(--green);
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 3rem;
+            opacity: 0;
+            transform: translateY(50px);
+            animation: fadeInUp 1s ease-out 4s forwards;
+        }
+
+        .mega-brain-logo {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--green) 0%, var(--gold) 50%, var(--green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px var(--green);
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .mega-brain-logo::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: linear-gradient(135deg, var(--green), var(--gold));
+            filter: blur(20px);
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            color: var(--muted);
+            font-weight: 300;
+            margin-bottom: 3rem;
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, var(--green) 0%, var(--gold) 100%);
+            border: none;
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--bg);
+            border-radius: 50px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 136, 0.5),
+                0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 0 30px rgba(0, 255, 136, 0.8),
+                0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .version-badge {
+            position: absolute;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(13, 13, 20, 0.8);
+            border: 1px solid var(--gold);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--gold);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .system-info {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--muted);
+            opacity: 0;
+            animation: fadeIn 1s ease-out 5s forwards;
+        }
+
+        .system-info div {
+            margin-bottom: 0.5rem;
+        }
+
+        .status-online {
+            color: var(--green);
+            text-shadow: 0 0 5px var(--green);
+        }
+
+        .neural-connections {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .connection-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--green), transparent);
+            opacity: 0.3;
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-2px); }
+            40% { transform: translateX(2px); }
+            60% { transform: translateX(-1px); }
+            80% { transform: translateX(1px); }
+        }
+
+        .glitch-effect {
+            animation: glitch 0.1s ease-in-out;
+        }
+
+        .main-content {
+            opacity: 0;
+            animation: fadeIn 1s ease-out 4s forwards;
+        }
+
+        @media (max-width: 768px) {
+            .mega-brain-logo {
+                font-size: 2.5rem;
+            }
+            
+            .tagline {
+                font-size: 1rem;
+                padding: 0 2rem;
+            }
+            
+            .progress-container {
+                width: 300px;
+            }
+            
+            .version-badge,
+            .system-info {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="neural-network"></canvas>
+    
+    <div class="boot-sequence" id="bootSequence">
+        <div class="boot-text" id="bootText">INICIALIZANDO SISTEMA MEGA BRAIN...</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="system-info">
+            <div>STATUS: <span class="status-online">ONLINE</span></div>
+            <div>CPU: 99.7% OTIMIZADO</div>
+            <div>NEURAL NET: ATIVO</div>
+            <div>CONEXÕES: 1,247,891</div>
+        </div>
+
+        <div class="main-content">
+            <div class="logo-container">
+                <h1 class="mega-brain-logo">MEGA BRAIN</h1>
+                <p class="tagline">O cérebro artificial que potencializa suas ideias</p>
+            </div>
+
+            <button class="cta-button" id="accessButton">
+                ACESSAR SISTEMA
+            </button>
+        </div>
+
+        <div class="version-badge">
+            v1.1 — MEGA PRODUÇÕES
+        </div>
+    </div>
+
+    <script>
+        // Neural Network Background
+        const app = new PIXI.Application({
+            view: document.getElementById('neural-network'),
+            width: window.innerWidth,
+            height: window.innerHeight,
+            backgroundColor: 0x050508,
+            antialias: true
+        });
+
+        const nodes = [];
+        const connections = [];
+        const numNodes = 50;
+
+        // Create nodes
+        for (let i = 0; i < numNodes; i++) {
+            const node = new PIXI.Graphics();
+            node.beginFill(0x00FF88, 0.6);
+            node.drawCircle(0, 0, Math.random() * 3 + 1);
+            node.endFill();
+            
+            node.x = Math.random() * app.screen.width;
+            node.y = Math.random() * app.screen.height;
+            node.vx = (Math.random() - 0.5) * 0.5;
+            node.vy = (Math.random() - 0.5) * 0.5;
+            
+            app.stage.addChild(node);
+            nodes.push(node);
+        }
+
+        // Create connections
+        function createConnections() {
+            connections.forEach(connection => app.stage.removeChild(connection));
+            connections.length = 0;
+
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dx = nodes[i].x - nodes[j].x;
+                    const dy = nodes[i].y - nodes[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 150) {
+                        const connection = new PIXI.Graphics();
+                        const alpha = (150 - distance) / 150 * 0.3;
+                        connection.lineStyle(1, 0x00FF88, alpha);
+                        connection.moveTo(nodes[i].x, nodes[i].y);
+                        connection.lineTo(nodes[j].x, nodes[j].y);
+                        
+                        app.stage.addChild(connection);
+                        connections.push(connection);
+                    }
+                }
+            }
+        }
+
+        // Animation loop
+        app.ticker.add(() => {
+            nodes.forEach(node => {
+                node.x += node.vx;
+                node.y += node.vy;
+
+                if (node.x < 0 || node.x > app.screen.width) node.vx *= -1;
+                if (node.y < 0 || node.y > app.screen.height) node.vy *= -1;
+            });
+
+            createConnections();
+        });
+
+        // Boot sequence
+        const bootSequence = document.getElementById('bootSequence');
+        const progressBar = document.getElementById('progressBar');
+        const bootText = document.getElementById('bootText');
+        const accessButton = document.getElementById('accessButton');
+
+        const bootMessages = [
+            'INICIALIZANDO SISTEMA MEGA BRAIN...',
+            'CARREGANDO MÓDULOS NEURAIS...',
+            'ESTABELECENDO CONEXÕES SINÁPTICAS...',
+            'OTIMIZANDO PERFORMANCE CEREBRAL...',
+            'CALIBRANDO INTELIGÊNCIA ARTIFICIAL...',
+            'SISTEMA PRONTO PARA USO'
+        ];
+
+        let progress = 0;
+        let messageIndex = 0;
+        let bootComplete = false;
+
+        function updateBoot() {
+            if (bootComplete) return;
+
+            progress += Math.random() * 15 + 5;
+            if (progress > 100) progress = 100;
+
+            progressBar.style.width = progress + '%';
+
+            if (progress > messageIndex * 20 && messageIndex < bootMessages.length - 1) {
+                messageIndex++;
+                bootText.textContent = bootMessages[messageIndex];
+                
+                // Glitch effect
+                bootText.classList.add('glitch-effect');
+                setTimeout(() => {
+                    bootText.classList.remove('glitch-effect');
+                }, 100);
+            }
+
+            if (progress >= 100) {
+                bootComplete = true;
+                setTimeout(() => {
+                    bootSequence.classList.add('hidden');
+                }, 1000);
+            } else {
+                setTimeout(updateBoot, 200 + Math.random() * 300);
+            }
+        }
+
+        // Start boot sequence
+        setTimeout(updateBoot, 1000);
+
+        // Button interactions
+        accessButton.addEventListener('click', () => {
+            accessButton.textContent = 'ACESSANDO...';
+            accessButton.style.background = 'linear-gradient(135deg, #7C5CFC 0%, #FF3355 100%)';
+            accessButton.style.boxShadow = '0 0 40px rgba(124,92,252,0.8), 0 15px 40px rgba(0,0,0,0.4)';
+            
+            setTimeout(() => {
+                document.body.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                document.body.style.opacity = '0';
+                document.body.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 800);
+            }, 600);
+        });
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            app.renderer.resize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

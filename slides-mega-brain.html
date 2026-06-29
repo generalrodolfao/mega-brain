@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mega Brain — Análise Técnica</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --color-primary: #00FF88;
+            --color-secondary: #FF6B6B;
+            --color-accent: #7C5CFC;
+            --color-background: #0A0A0F;
+            --color-surface: #14141F;
+            --color-card: #1A1A2E;
+            --color-border: #2A2A4A;
+            --color-text: #E8E8F0;
+            --color-muted: #8888AA;
+            --color-brain: #FFD700;
+            --typography-font-heading: 'Space Grotesk', sans-serif;
+            --typography-font-body: 'Inter', sans-serif;
+            --primitive-gradient-primary: linear-gradient(135deg, #00FF88, #7C5CFC);
+            --primitive-gradient-brain: linear-gradient(135deg, #FFD700, #FF6B6B);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--color-background);
+            color: var(--color-text);
+            font-family: var(--typography-font-body);
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .slide-deck {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        @media (min-width: 769px) {
+            .slide-deck {
+                max-width: calc(100vh * 16 / 9);
+                max-height: calc(100vw * 9 / 16);
+                margin: auto;
+                position: absolute;
+                inset: 0;
+            }
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 60px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease;
+            background: var(--color-background);
+            overflow: hidden;
+        }
+        .slide.active { opacity: 1; visibility: visible; }
+
+        .slide-content {
+            width: 100%;
+            max-width: 1100px;
+            max-height: 100%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+        .slide-content::-webkit-scrollbar { width: 4px; }
+        .slide-content::-webkit-scrollbar-track { background: transparent; }
+        .slide-content::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
+
+        h1, h2, h3 { font-family: var(--typography-font-heading); }
+        .slide-title {
+            font-size: clamp(32px, 5vw, 72px);
+            background: var(--primitive-gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.1;
+            font-weight: 700;
+        }
+        .slide-title.brain {
+            background: var(--primitive-gradient-brain);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        h2 {
+            font-size: clamp(24px, 3.5vw, 48px);
+            color: #fff;
+            font-weight: 600;
+        }
+        h3 {
+            font-size: clamp(18px, 2vw, 28px);
+            color: var(--color-primary);
+            font-weight: 500;
+        }
+        p, li {
+            font-size: clamp(14px, 1.6vw, 22px);
+            line-height: 1.6;
+            color: var(--color-text);
+            max-width: 800px;
+        }
+        .subtitle {
+            font-size: clamp(16px, 2vw, 28px);
+            color: var(--color-muted);
+            font-weight: 300;
+        }
+        .muted { color: var(--color-muted); }
+        .highlight { color: var(--color-primary); }
+        .highlight-red { color: var(--color-secondary); }
+        .highlight-brain { color: var(--color-brain); }
+        .small { font-size: clamp(12px, 1.2vw, 16px); }
+
+        /* Grid layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            width: 100%;
+            text-align: left;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            width: 100%;
+        }
+        .grid-7 {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            width: 100%;
+        }
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .grid-3 { grid-template-columns: 1fr; }
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-7 { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: var(--color-primary);
+        }
+        .card h3 { font-size: clamp(14px, 1.4vw, 20px); margin-bottom: 8px; }
+        .card p { font-size: clamp(12px, 1.1vw, 16px); color: var(--color-muted); }
+        .card .card-number {
+            font-size: clamp(20px, 2.5vw, 36px);
+            font-weight: 700;
+            background: var(--primitive-gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card.card-brain .card-number {
+            background: var(--primitive-gradient-brain);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card.card-brain { border-color: rgba(255, 215, 0, 0.3); }
+
+        .card-verdict {
+            background: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        .card-verdict .verdict-label {
+            font-size: clamp(11px, 1vw, 14px);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+        }
+        .card-verdict .verdict-value {
+            font-size: clamp(16px, 1.8vw, 24px);
+            font-weight: 600;
+        }
+        .verdict-green { color: var(--color-primary); }
+        .verdict-red { color: var(--color-secondary); }
+        .verdict-yellow { color: var(--color-brain); }
+
+        /* Architecture diagram */
+        .arch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            width: 100%;
+        }
+        .arch-layer {
+            background: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 10px 24px;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+            font-size: clamp(12px, 1.2vw, 18px);
+            position: relative;
+        }
+        .arch-layer span.label {
+            font-weight: 600;
+        }
+        .arch-layer span.desc {
+            color: var(--color-muted);
+            font-size: clamp(10px, 1vw, 14px);
+        }
+        .arch-layer.highlight-layer {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 20px rgba(0,255,136,0.1);
+        }
+        .arch-layer.brain-layer {
+            border-color: var(--color-brain);
+            box-shadow: 0 0 20px rgba(255,215,0,0.1);
+        }
+        .arch-arrow { color: var(--color-muted); font-size: 18px; }
+
+        /* Comparison table */
+        .comp-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: clamp(12px, 1.2vw, 18px);
+        }
+        .comp-table th {
+            padding: 12px 16px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--color-border);
+            color: var(--color-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: clamp(10px, 1vw, 14px);
+        }
+        .comp-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .comp-table .vs-left { color: var(--color-secondary); font-weight: 500; }
+        .comp-table .vs-right { color: var(--color-primary); font-weight: 500; }
+
+        /* Tags */
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: clamp(10px, 0.9vw, 13px);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .tag-green { background: rgba(0,255,136,0.15); color: var(--color-primary); }
+        .tag-red { background: rgba(255,107,107,0.15); color: var(--color-secondary); }
+        .tag-yellow { background: rgba(255,215,0,0.15); color: var(--color-brain); }
+        .tag-purple { background: rgba(124,92,252,0.15); color: var(--color-accent); }
+
+        /* Comparison side by side */
+        .vs-container {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 16px;
+            align-items: center;
+            width: 100%;
+        }
+        .vs-box {
+            padding: 20px;
+            border-radius: 12px;
+            text-align: left;
+        }
+        .vs-box h3 { margin-bottom: 12px; font-size: clamp(16px, 1.6vw, 24px); }
+        .vs-box li {
+            font-size: clamp(12px, 1.2vw, 16px);
+            margin-bottom: 6px;
+            list-style: none;
+        }
+        .vs-box li::before { content: "→ "; }
+        .vs-box.vs-left-box {
+            background: rgba(255,107,107,0.08);
+            border: 1px solid rgba(255,107,107,0.2);
+        }
+        .vs-box.vs-left-box h3 { color: var(--color-secondary); }
+        .vs-box.vs-right-box {
+            background: rgba(0,255,136,0.08);
+            border: 1px solid rgba(0,255,136,0.2);
+        }
+        .vs-box.vs-right-box h3 { color: var(--color-primary); }
+        .vs-divider {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--color-muted);
+        }
+
+        /* Route diagram */
+        .route-flow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 0;
+        }
+        .route-node {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: clamp(12px, 1.2vw, 18px);
+            width: 70%;
+            max-width: 500px;
+            text-align: center;
+            border: 1px solid var(--color-border);
+            background: var(--color-card);
+        }
+        .route-node.route-highlight {
+            border-color: var(--color-primary);
+            background: rgba(0,255,136,0.05);
+        }
+        .route-node.route-brain {
+            border-color: var(--color-brain);
+            background: rgba(255,215,0,0.05);
+        }
+        .route-node.route-top {
+            border-color: var(--color-accent);
+            background: rgba(124,92,252,0.05);
+        }
+        .route-arrow { color: var(--color-muted); font-size: 14px; line-height: 1; }
+        .route-branch {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 700px;
+        }
+
+        /* Number display */
+        .big-number {
+            font-size: clamp(48px, 8vw, 120px);
+            font-weight: 700;
+            background: var(--primitive-gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+
+        /* Navigation */
+        .progress-bar {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            background: var(--primitive-gradient-primary);
+            transition: width 0.3s;
+            z-index: 1000;
+        }
+        .nav-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 1000;
+        }
+        .nav-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--color-border);
+            color: #fff;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.15); border-color: var(--color-primary); }
+        .slide-counter { color: var(--color-muted); font-size: 14px; }
+
+        /* Animations */
+        .animate-fade-up {
+            animation: fadeUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-scale {
+            animation: scaleIn 0.5s ease-out forwards;
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-stagger > * {
+            opacity: 0;
+            animation: fadeUp 0.5s ease-out forwards;
+        }
+        .animate-stagger > *:nth-child(1) { animation-delay: 0.1s; }
+        .animate-stagger > *:nth-child(2) { animation-delay: 0.2s; }
+        .animate-stagger > *:nth-child(3) { animation-delay: 0.3s; }
+        .animate-stagger > *:nth-child(4) { animation-delay: 0.4s; }
+        .animate-stagger > *:nth-child(5) { animation-delay: 0.5s; }
+        .animate-stagger > *:nth-child(6) { animation-delay: 0.6s; }
+        .animate-stagger > *:nth-child(7) { animation-delay: 0.7s; }
+
+        /* Code block */
+        .code-block {
+            background: #0D0D1A;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: clamp(10px, 1vw, 14px);
+            line-height: 1.6;
+            width: 100%;
+            max-width: 700px;
+            text-align: left;
+            overflow-x: auto;
+            color: var(--color-text);
+        }
+        .code-block .kw { color: var(--color-accent); }
+        .code-block .str { color: var(--color-primary); }
+        .code-block .cm { color: var(--color-muted); }
+        .code-block .fn { color: var(--color-brain); }
+
+        /* Step list */
+        .step-list {
+            width: 100%;
+            max-width: 700px;
+            text-align: left;
+        }
+        .step-item {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .step-number {
+            font-size: clamp(18px, 1.8vw, 28px);
+            font-weight: 700;
+            color: var(--color-primary);
+            min-width: 36px;
+        }
+
+        .bg-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .icon {
+            font-size: clamp(32px, 4vw, 64px);
+            margin-bottom: 8px;
+        }
+
+        /* Mobile fixes */
+        @media (max-width: 768px) {
+            .slide { padding: 32px 20px; }
+            .route-branch { grid-template-columns: 1fr; }
+            .vs-container { grid-template-columns: 1fr; }
+            .vs-divider { transform: rotate(90deg); }
+        }
+        @media (max-width: 480px) {
+            .slide { padding: 24px 16px; }
+            .nav-controls { bottom: 16px; gap: 12px; }
+            .nav-btn { width: 32px; height: 32px; font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="slide-deck">
+
+        <!-- ===== SLIDE 1: TITLE ===== -->
+        <div class="slide active">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <div class="icon" style="font-size: 80px;">🧠</div>
+                <h1 class="slide-title brain">MEGA BRAIN</h1>
+                <p class="subtitle">Análise Técnica — O que realmente tem dentro?</p>
+                <p style="margin-top: 12px;">Como construir seu próprio sistema multi-agente com voz, routing inteligente e squad de copywriting</p>
+                <p class="muted small" style="margin-top: 24px;">Baseado em análise de código, documentação oficial e engenharia reversa</p>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 2: O FENÔMENO ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <h2>O Fenômeno</h2>
+                <p class="subtitle">Thiago Finch × Comunidade Dev</p>
+                <div style="margin-top: 16px; width: 100%; max-width: 800px; text-align: left;">
+                    <p>📺 <strong>Não Adivinho</strong> — 113k views em 14h: "Thiago Finch virou piada"</p>
+                    <p>🎙 <strong>Desbugados #063</strong> — Programadores analisam o código</p>
+                    <p>💬 <strong>r/brdev + r/farialimabets</strong> — Debate e memes nacionais</p>
+                    <p>📱 <strong>TikTok/Instagram</strong> — "Ativar 200% do Mega Brain" viral</p>
+                    <p>📰 <strong>Eurisko + VEJA</strong> — Análise do fenômeno cultural</p>
+                </div>
+                <div class="grid-4" style="margin-top: 20px;">
+                    <div class="card-verdict"><div class="verdict-label" style="color: var(--color-secondary);">CRÍTICOS</div><div class="verdict-value verdict-red">"É só um prompt"</div></div>
+                    <div class="card-verdict"><div class="verdict-label" style="color: var(--color-primary);">DEFENSORES</div><div class="verdict-value verdict-green">"Produto real"</div></div>
+                    <div class="card-verdict"><div class="verdict-label" style="color: var(--color-brain);">MEMES</div><div class="verdict-value verdict-yellow">Viral nacional</div></div>
+                    <div class="card-verdict"><div class="verdict-label" style="color: var(--color-accent);">CÓDIGO</div><div class="verdict-value" style="color: var(--color-accent);">1.003 commits</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 3: MARKETING vs REALIDADE ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <h2>O que Finch VENDEU × O que REALMENTE é</h2>
+                <div class="vs-container" style="margin-top: 16px;">
+                    <div class="vs-box vs-left-box">
+                        <h3>🔥 VENDEU</h3>
+                        <li>Sistema revolucionário de IA</li>
+                        <li>Prompt secreto Mega Brain</li>
+                        <li>Copy Chief como inovação</li>
+                        <li>Mind Clone Agents únicos</li>
+                        <li>JARVIS Orchestrator</li>
+                        <li>Extrair DNA de experts</li>
+                    </div>
+                    <div class="vs-divider">⚡</div>
+                    <div class="vs-box vs-right-box">
+                        <h3>🔧 REALIDADE</h3>
+                        <li>Fork do aiox-core (open-source)</li>
+                        <li>Claude Code + system prompts</li>
+                        <li>Squad multi-agente (comum)</li>
+                        <li>Agentes com RAG + contexto</li>
+                        <li>Pipeline runner de scripts</li>
+                        <li>Schema de extração + RAG</li>
+                    </div>
+                </div>
+                <p class="muted small" style="margin-top: 16px;">Fonte: Documentação oficial (mintlify) + Código no GitHub (brunajunckes/mega-brain-thiagofinch-)</p>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 4: ARQUITETURA REAL ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <h2>Arquitetura do Mega Brain</h2>
+                <p class="subtitle">Engenharia reversa a partir do código</p>
+                <div class="arch" style="margin-top: 12px;">
+                    <div class="arch-layer brain-layer"><span class="label">🧠 Mega Brain</span> <span class="desc">— Claude Code + Scripts Node.js</span></div>
+                    <div class="arch-arrow">↓</div>
+                    <div class="arch-layer"><span class="label">⑤ Dashboard</span> <span class="desc">— state.json + WebSocket</span></div>
+                    <div class="arch-arrow">↓</div>
+                    <div class="arch-layer highlight-layer"><span class="label">④ Mind Clone Agents</span> <span class="desc">— System Prompts + RAG + Conclave multi-agente</span></div>
+                    <div class="arch-arrow">↓</div>
+                    <div class="arch-layer"><span class="label">③ DNA Extraction (5 camadas)</span> <span class="desc">— Filosofias, Modelos, Heurísticas, Frameworks, Metodologias</span></div>
+                    <div class="arch-arrow">↓</div>
+                    <div class="arch-layer"><span class="label">② JARVIS Orchestrator</span> <span class="desc">— Pipeline runner com 20 hooks de automação</span></div>
+                    <div class="arch-arrow">↓</div>
+                    <div class="arch-layer"><span class="label">① Multi-Format Ingestion</span> <span class="desc">— Vídeos, PDFs, Transcrições, Podcasts</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 5: VERDADES E MITOS ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <h2>Verdades e Mitos</h2>
+                <p class="subtitle">O que a comunidade dev acertou e errou</p>
+                <div style="width: 100%; max-width: 900px; margin-top: 12px;">
+                    <table class="comp-table">
+                        <tr><th>Crítica</th><th>Veredito</th><th>Explicação</th></tr>
+                        <tr><td>"É só um prompt"</td><td><span class="tag tag-red">MITO</span></td><td>Tem pipeline, agentes, RAG, 1003 commits</td></tr>
+                        <tr><td>"Marketing enganoso"</td><td><span class="tag tag-green">VERDADE</span></td><td>"200% Mega Brain", "prompt secreto" é hype puro</td></tr>
+                        <tr><td>"Não funciona"</td><td><span class="tag tag-red">MITO</span></td><td>Código roda e faz o que promete</td></tr>
+                        <tr><td>"Ele roubou código"</td><td><span class="tag tag-yellow">PARCIAL</span></td><td>Fork do aiox-core com branding (comum em OS)</td></tr>
+                        <tr><td>"Devs são elitistas"</td><td><span class="tag tag-yellow">PARCIAL</span></td><td>Sim, mas Finch provocou primeiro</td></tr>
+                        <tr><td>"Produto tem valor real"</td><td><span class="tag tag-green">VERDADE</span></td><td>Sistema de ingestão + agentes resolve problema real</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 6: MINHA ARQUITETURA ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <h2>Nossa Arquitetura — Mega Brain 2.0</h2>
+                <p class="subtitle">O que ele prometeu + o que ele não entregou</p>
+                <div style="margin-top: 8px; width: 100%; max-width: 900px;">
+                    <div class="route-flow">
+                        <div class="route-node route-highlight">🎤 Voice Gateway — Whisper STT</div>
+                        <div class="route-arrow">↓</div>
+                        <div class="route-node route-brain">🧠 Sentiment Router — Classifica intenção e complexidade</div>
+                        <div class="route-arrow">↓</div>
+                        <div class="route-branch">
+                            <div class="route-node">😐 "normal"<br><span class="small muted">→ Gemini Flash</span></div>
+                            <div class="route-node route-highlight">🧠 "brain"<br><span class="small muted">→ GPT-4o</span></div>
+                            <div class="route-node route-top">⚡ "mega brain"<br><span class="small muted">→ Claude Opus / o1</span></div>
+                        </div>
+                        <div class="route-arrow">↓</div>
+                        <div class="route-node route-brain">👥 Copy Chief Squad — 7 Agentes Especializados</div>
+                        <div class="route-arrow">↓</div>
+                        <div class="route-node route-highlight">📊 Dashboard Pixi.js — Visualização em tempo real</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 7: COPY CHIEF SQUAD ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <h2>Copy Chief Squad</h2>
+                <p class="subtitle">7 agentes especializados orquestrados</p>
+                <div class="grid-7 animate-stagger" style="margin-top: 12px;">
+                    <div class="card card-brain" style="text-align: center;">
+                        <div class="icon" style="font-size: 24px;">👑</div>
+                        <h3>Copy Chief</h3>
+                        <p class="small">Coordenador</p>
+                        <p class="small muted">Claude Opus</p>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <div class="icon" style="font-size: 24px;">📊</div>
+                        <h3>Strategist</h3>
+                        <p class="small">Estratégia</p>
+                        <p class="small muted">GPT-4o</p>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <div class="icon" style="font-size: 24px;">✍️</div>
+                        <h3>Copywriter</h3>
+                        <p class="small">Redação</p>
+                        <p class="small muted">Claude Sonnet</p>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <div class="icon" style="font-size: 24px;">📱</div>
+                        <h3>Social</h3>
+                        <p class="small">Social Media</p>
+                        <p class="small muted">GPT-4o mini</p>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <div class="icon" style="font-size: 24px;">🎨</div>
+                        <h3>Designer</h3>
+                        <p class="small">Briefing</p>
+                        <p class="small muted">Gemini Flash</p>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <div class="icon" style="font-size: 24px;">🔍</div>
+                        <h3>SEO</h3>
+                        <p class="small">Distribuição</p>
+                        <p class="small muted">GPT-4o mini</p>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <div class="icon" style="font-size: 24px;">✅</div>
+                        <h3>Reviewer</h3>
+                        <p class="small">Qualidade</p>
+                        <p class="small muted">Claude Sonnet</p>
+                    </div>
+                </div>
+                <p class="muted small" style="margin-top: 8px;">Cada agente tem system prompt, modelo e ferramentas específicas</p>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 8: ROUTER CÓDIGO ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <h2>Router Inteligente</h2>
+                <p class="subtitle">O "segredo" do Mega Brain é só um if/else bem feito</p>
+                <div class="code-block">
+                    <span class="cm"># router.py — O "Mega Brain" é só roteamento</span><br>
+                    <span class="kw">def</span> <span class="fn">route</span>(text: <span class="kw">str</span>, sentiment: <span class="kw">str</span>) -> <span class="kw">str</span>:<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> <span class="str">"mega brain"</span> <span class="kw">in</span> text.lower() <span class="kw">or</span> sentiment == <span class="str">"alta"</span>:<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> <span class="str">"claude-sonnet-4-20250514"</span>  <span class="cm"># Topo de linha</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">elif</span> <span class="str">"brain"</span> <span class="kw">in</span> text.lower() <span class="kw">or</span> sentiment == <span class="str">"media"</span>:<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> <span class="str">"gpt-4o"</span>  <span class="cm"># Intermediário</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">else</span>:<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> <span class="str">"gemini-2.0-flash-lite"</span>  <span class="cm"># Econômico</span><br>
+                    <br>
+                    <span class="cm"># Copy Chief Squad só é ativado em "mega brain"</span><br>
+                    <span class="kw">if</span> model == <span class="str">"claude-sonnet-4-20250514"</span>:<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;squad.activate(<span class="str">"copy-chief"</span>)  <span class="cm"># 7 agentes</span>
+                </div>
+                <p class="muted small" style="margin-top: 8px;">A mágica é arquitetura, não feitiço. O "Mega Brain" é routing + squad maior.</p>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 9: O QUE ELE ACERTOU ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <h2>O que o Finch ACERTOU</h2>
+                <p class="subtitle">E você deveria copiar</p>
+                <div class="grid-2 animate-stagger" style="margin-top: 16px;">
+                    <div class="card">
+                        <div class="card-number">01</div>
+                        <h3>Problema Real</h3>
+                        <p>Operacionalizar conhecimento é difícil. O sistema de ingestão → extração → playbooks resolve uma dor verdadeira.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-number">02</div>
+                        <h3>Produto Funcional</h3>
+                        <p>Diferente de 90% dos infoprodutos de IA, o código roda. 1003 commits. Pipeline real. Agentes funcionais.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-number">03</div>
+                        <h3>Distribuição Genial</h3>
+                        <p>A polêmica vendeu mais que qualquer anúncio. Marketing 101: falem bem ou falem mal, mas falem.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-number">04</div>
+                        <h3>Embalagem Certa</h3>
+                        <p>Ele não vende pra devs. Vende pra empreendedores. A linguagem é pro público dele, não pro nosso.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 10: O QUE ELE ERROU ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <h2>O que o Finch ERROU</h2>
+                <p class="subtitle">Onde a comunidade dev estava certa</p>
+                <div class="grid-2 animate-stagger" style="margin-top: 16px;">
+                    <div class="card" style="border-color: rgba(255,107,107,0.3);">
+                        <div class="card-number" style="background: linear-gradient(135deg, #FF6B6B, #FF8E53); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">01</div>
+                        <h3>Hype Desonesto</h3>
+                        <p>"200% do Mega Brain", "inteligência oculta", "prompt secreto" — não existe. É system prompt bem escrito.</p>
+                    </div>
+                    <div class="card" style="border-color: rgba(255,107,107,0.3);">
+                        <div class="card-number" style="background: linear-gradient(135deg, #FF6B6B, #FF8E53); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">02</div>
+                        <h3>Fork Vendido como Inovação</h3>
+                        <p>Fork do aiox-core com branding é legítimo, mas vender como "tecnologia proprietária revolucionária" é questionável.</p>
+                    </div>
+                    <div class="card" style="border-color: rgba(255,107,107,0.3);">
+                        <div class="card-number" style="background: linear-gradient(135deg, #FF6B6B, #FF8E53); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">03</div>
+                        <h3>Antagonizou Devs</h3>
+                        <p>"Devs não entendem de negócio" generaliza e antagoniza quem poderia ser parceiro. Queima pontes.</p>
+                    </div>
+                    <div class="card" style="border-color: rgba(255,107,107,0.3);">
+                        <div class="card-number" style="background: linear-gradient(135deg, #FF6B6B, #FF8E53); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">04</div>
+                        <h3>Precificação</h3>
+                        <p>Versão Pro paga para código open-source. Cobrar por suporte/deploy é justo. Cobrar pelo código que não escreveu é polêmico.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 11: DIAGRAMA DE VENN ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <h2>Quem está certo?</h2>
+                <p class="subtitle">A verdade é mais sutil que os extremos</p>
+                <div class="vs-container" style="margin-top: 16px;">
+                    <div class="vs-box vs-left-box">
+                        <h3>👩‍💻 COMUNIDADE DEV</h3>
+                        <li style="color: var(--color-primary);">✓ Produto real, código existe</li>
+                        <li style="color: var(--color-primary);">✓ Arquitetura válida</li>
+                        <li style="color: var(--color-secondary);">✗ "É só um prompt" — mito</li>
+                        <li style="color: var(--color-secondary);">✗ "Não funciona" — falso</li>
+                    </div>
+                    <div class="vs-divider" style="font-size: 24px;">⚖️</div>
+                    <div class="vs-box vs-right-box">
+                        <h3>👔 THIAGO FINCH</h3>
+                        <li style="color: var(--color-primary);">✓ Marketing entende</li>
+                        <li style="color: var(--color-primary);">✓ Problema real identificou</li>
+                        <li style="color: var(--color-secondary);">✗ "Prompt secreto" — não existe</li>
+                        <li style="color: var(--color-secondary);">✗ "Inovação" — é fork</li>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding: 16px 24px; background: rgba(124,92,252,0.08); border: 1px solid rgba(124,92,252,0.2); border-radius: 12px; max-width: 700px;">
+                    <p style="color: var(--color-accent); font-weight: 600;">A verdade:</p>
+                    <p class="small">Produto real + marketing exagerado. Código legítimo + fork de OS. Arquitetura válida + não é inovação. <strong>Os dois lados têm razão em partes.</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 12: ABERTURA DO CÓDIGO ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <h2>Opensquad — A Base do Mega Brain</h2>
+                <p class="subtitle">O framework que já faz tudo que Finch prometeu</p>
+                <div style="width: 100%; max-width: 900px; margin-top: 12px;">
+                    <table class="comp-table">
+                        <tr><th>Mega Brain (Finch)</th><th>Opensquad (aqui)</th></tr>
+                        <tr><td>⭐ Pago (Pro)</td><td>🆓 Open-source gratuito</td></tr>
+                        <tr><td>🐚 CLI First</td><td>🐚 CLI First</td></tr>
+                        <tr><td>🤖 Mind Clone Agents</td><td>🤖 Agentes especializados por YAML</td></tr>
+                        <tr><td>👥 Copy Chief</td><td>👥 Squads multi-agente</td></tr>
+                        <tr><td>📊 Dashboard state.json</td><td>📊 Dashboard Pixi.js + WebSocket</td></tr>
+                        <tr><td>🧠 JARVIS Orchestrator</td><td>⚡ Pipeline Runner</td></tr>
+                        <tr><td>📝 Mintlify docs</td><td>📝 Documentação completa</td></tr>
+                    </table>
+                </div>
+                <p class="muted small" style="margin-top: 12px;">A diferença? O Opensquad é open-source, modular e você pode adaptar.</p>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 13: DEMO SQUAD.YAML ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <h2>Código: Copy Chief Squad</h2>
+                <p class="subtitle">7 agentes em ~30 linhas de YAML</p>
+                <div class="code-block">
+                    <span class="cm"># squads/copy-chief/squad.yaml</span><br>
+                    <span class="kw">name</span>: copy-chief<br>
+                    <span class="kw">description</span>: <span class="str">Squad de copywriting multi-agente</span><br>
+                    <span class="kw">agents</span>:<br>
+                    &nbsp;&nbsp;- <span class="kw">name</span>: copy-chief<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">role</span>: <span class="str">Coordenador — recebe, delega, revisa</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">model</span>: claude-sonnet-4<br>
+                    &nbsp;&nbsp;- <span class="kw">name</span>: strategist<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">role</span>: <span class="str">Estratégia — posicionamento, público, CTA</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">model</span>: gpt-4o<br>
+                    &nbsp;&nbsp;- <span class="kw">name</span>: copywriter<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">role</span>: <span class="str">Redação — headlines, body, storytelling</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">model</span>: claude-sonnet-4<br>
+                    &nbsp;&nbsp;- <span class="kw">name</span>: social-media<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">role</span>: <span class="str">Adaptação por plataforma</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">model</span>: gpt-4o-mini<br>
+                    &nbsp;&nbsp;- <span class="kw">name</span>: designer<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">role</span>: <span class="str">Briefing visual</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">model</span>: gemini-2.0-flash
+                </div>
+                <p class="muted small" style="margin-top: 8px;">Cada agente é independente, com modelo, ferramentas e instruções específicas</p>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 14: DEMO PIPELINE ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <h2>Pipeline de Execução</h2>
+                <p class="subtitle">O "JARVIS" é só um pipeline com stages</p>
+                <div class="step-list">
+                    <div class="step-item">
+                        <div class="step-number">01</div>
+                        <div><strong>Voice Input</strong><br><span class="small muted">Whisper STT transcreve áudio → texto</span></div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">02</div>
+                        <div><strong>Sentiment Router</strong><br><span class="small muted">Classifica intenção: "normal", "brain" ou "mega brain"</span></div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">03</div>
+                        <div><strong>Model Router</strong><br><span class="small muted">Roteia para Gemini Flash, GPT-4o ou Claude Opus</span></div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">04</div>
+                        <div><strong>Copy Chief Squad</strong><br><span class="small muted">7 agentes em paralelo: strategist, copywriter, social, designer, seo, reviewer</span></div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">05</div>
+                        <div><strong>Dashboard</strong><br><span class="small muted">state.json → WebSocket → Pixi.js em tempo real</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 15: A VERDADE FINAL ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <div class="icon" style="font-size: 64px;">💡</div>
+                <h2>A Verdade Final</h2>
+                <p class="subtitle" style="max-width: 800px;">
+                    "O verdadeiro Mega Brain não é um prompt secreto. Não é um curso de R$X. 
+                    É <strong>arquitetura bem feita</strong>: orquestração multi-agente, 
+                    ingestão de conhecimento, roteamento inteligente."
+                </p>
+                <p style="max-width: 700px; margin-top: 24px;">
+                    O Finch identificou um problema real e entregou um produto funcional.
+                    A comunidade dev tem razão em criticar o marketing — mas erra ao descartar o produto.
+                </p>
+                <p style="max-width: 700px; margin-top: 12px; color: var(--color-primary); font-weight: 500;">
+                    O código está no GitHub. O Opensquad é open-source.
+                    <br>Construa o seu. Venda o serviço, não o hype.
+                </p>
+                <p class="muted small" style="margin-top: 24px;">github.com/seu-usuario/opensquad</p>
+            </div>
+        </div>
+
+        <!-- ===== SLIDE 16: PERGUNTAS ===== -->
+        <div class="slide">
+            <div class="bg-grid"></div>
+            <div class="slide-content animate-fade-up">
+                <div class="icon" style="font-size: 64px;">❓</div>
+                <h2>Perguntas?</h2>
+                <p class="subtitle" style="max-width: 700px;">
+                    "Se o Finch pode vender, você pode construir de graça."
+                </p>
+                <div style="margin-top: 32px;">
+                    <p class="small">📺 Inscreva-se para mais análises técnicas</p>
+                    <p class="small">🐙 GitHub: github.com/seu-usuario</p>
+                    <p class="small">🐦 Twitter/X: @seu-usuario</p>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /.slide-deck -->
+
+    <div class="nav-controls">
+        <button class="nav-btn" onclick="prevSlide()">←</button>
+        <span class="slide-counter"><span id="current">1</span> / <span id="total">16</span></span>
+        <button class="nav-btn" onclick="nextSlide()">→</button>
+    </div>
+
+    <script>
+        let current = 1;
+        const total = document.querySelectorAll('.slide').length;
+        document.getElementById('total').textContent = total;
+
+        function showSlide(n) {
+            if (n < 1) n = 1;
+            if (n > total) n = total;
+            current = n;
+            document.querySelectorAll('.slide').forEach((s, i) => {
+                s.classList.toggle('active', i === n - 1);
+            });
+            document.getElementById('current').textContent = n;
+            document.getElementById('progressBar').style.width = (n / total * 100) + '%';
+        }
+
+        function nextSlide() { showSlide(current + 1); }
+        function prevSlide() { showSlide(current - 1); }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.nav-controls')) nextSlide();
+        });
+
+        showSlide(1);
+    </script>
+</body>
+</html>

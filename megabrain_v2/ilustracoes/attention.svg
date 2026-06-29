@@ -1,0 +1,102 @@
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <style>
+      .bg { fill: #0A0A0F; }
+      .title { fill: #E8E8F0; font-family: 'Arial', sans-serif; font-size: 18px; font-weight: bold; }
+      .subtitle { fill: #B8B8C8; font-family: 'Arial', sans-serif; font-size: 14px; }
+      .word { fill: #E8E8F0; font-family: 'Arial', sans-serif; font-size: 16px; font-weight: 500; }
+      .word-highlight { fill: #4A9EFF; font-family: 'Arial', sans-serif; font-size: 16px; font-weight: bold; }
+      .attention-line-weak { stroke: #404050; stroke-width: 1; opacity: 0.3; }
+      .attention-line-medium { stroke: #6B73FF; stroke-width: 2; opacity: 0.6; }
+      .attention-line-strong { stroke: #4A9EFF; stroke-width: 4; opacity: 0.9; }
+      .attention-line-very-strong { stroke: #00D4FF; stroke-width: 6; opacity: 1; }
+      .concept-text { fill: #B8B8C8; font-family: 'Arial', sans-serif; font-size: 12px; }
+      .matrix-cell { fill: #1A1A2E; stroke: #404050; stroke-width: 0.5; }
+      .matrix-text { fill: #E8E8F0; font-family: 'Arial', sans-serif; font-size: 10px; text-anchor: middle; }
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect class="bg" width="800" height="500"/>
+  
+  <!-- Title -->
+  <text class="title" x="400" y="30" text-anchor="middle">Self-Attention: cada token aprende a focar nos tokens relevantes</text>
+  
+  <!-- Sentence words -->
+  <text class="word-highlight" x="80" y="100" text-anchor="middle">O</text>
+  <text class="word-highlight" x="160" y="100" text-anchor="middle">gato</text>
+  <text class="word" x="240" y="100" text-anchor="middle">bebeu</text>
+  <text class="word" x="320" y="100" text-anchor="middle">leite</text>
+  <text class="word" x="400" y="100" text-anchor="middle">porque</text>
+  <text class="word" x="480" y="100" text-anchor="middle">estava</text>
+  <text class="word" x="560" y="100" text-anchor="middle">com</text>
+  <text class="word" x="640" y="100" text-anchor="middle">sede</text>
+  
+  <!-- Attention lines from "gato" -->
+  <line class="attention-line-weak" x1="160" y1="110" x2="80" y2="110"/>
+  <line class="attention-line-very-strong" x1="160" y1="110" x2="240" y2="110"/>
+  <line class="attention-line-medium" x1="160" y1="110" x2="320" y2="110"/>
+  <line class="attention-line-weak" x1="160" y1="110" x2="400" y2="110"/>
+  <line class="attention-line-weak" x1="160" y1="110" x2="480" y2="110"/>
+  <line class="attention-line-weak" x1="160" y1="110" x2="560" y2="110"/>
+  <line class="attention-line-strong" x1="160" y1="110" x2="640" y2="110"/>
+  
+  <!-- Other attention lines (weaker) -->
+  <line class="attention-line-weak" x1="240" y1="120" x2="160" y2="120"/>
+  <line class="attention-line-medium" x1="240" y1="120" x2="320" y2="120"/>
+  <line class="attention-line-weak" x1="320" y1="130" x2="240" y2="130"/>
+  <line class="attention-line-weak" x1="640" y1="140" x2="480" y2="140"/>
+  <line class="attention-line-medium" x1="640" y1="140" x2="160" y2="140"/>
+  
+  <!-- Concept explanation -->
+  <text class="subtitle" x="400" y="180" text-anchor="middle">Cada palavra "olha" para todas as outras e decide quais são relevantes</text>
+  
+  <!-- Attention matrix visualization -->
+  <text class="subtitle" x="400" y="220" text-anchor="middle">Matriz de Atenção (simplificada)</text>
+  
+  <!-- Matrix headers -->
+  <text class="matrix-text" x="120" y="245">O</text>
+  <text class="matrix-text" x="160" y="245">gato</text>
+  <text class="matrix-text" x="200" y="245">bebeu</text>
+  <text class="matrix-text" x="240" y="245">leite</text>
+  <text class="matrix-text" x="280" y="245">porque</text>
+  <text class="matrix-text" x="320" y="245">estava</text>
+  <text class="matrix-text" x="360" y="245">com</text>
+  <text class="matrix-text" x="400" y="245">sede</text>
+  
+  <!-- Matrix rows for "gato" -->
+  <text class="matrix-text" x="80" y="275">gato</text>
+  
+  <!-- Matrix cells for "gato" row -->
+  <rect class="matrix-cell" x="100" y="260" width="20" height="20" fill="#404050" opacity="0.3"/>
+  <rect class="matrix-cell" x="140" y="260" width="20" height="20" fill="#00D4FF" opacity="1"/>
+  <rect class="matrix-cell" x="180" y="260" width="20" height="20" fill="#4A9EFF" opacity="0.9"/>
+  <rect class="matrix-cell" x="220" y="260" width="20" height="20" fill="#6B73FF" opacity="0.6"/>
+  <rect class="matrix-cell" x="260" y="260" width="20" height="20" fill="#404050" opacity="0.3"/>
+  <rect class="matrix-cell" x="300" y="260" width="20" height="20" fill="#404050" opacity="0.3"/>
+  <rect class="matrix-cell" x="340" y="260" width="20" height="20" fill="#404050" opacity="0.3"/>
+  <rect class="matrix-cell" x="380" y="260" width="20" height="20" fill="#4A9EFF" opacity="0.8"/>
+  
+  <!-- Legend -->
+  <text class="concept-text" x="100" y="320">Intensidade da Atenção:</text>
+  <rect x="100" y="330" width="15" height="10" fill="#404050" opacity="0.3"/>
+  <text class="concept-text" x="120" y="340">Baixa</text>
+  <rect x="180" y="330" width="15" height="10" fill="#6B73FF" opacity="0.6"/>
+  <text class="concept-text" x="200" y="340">Média</text>
+  <rect x="260" y="330" width="15" height="10" fill="#4A9EFF" opacity="0.9"/>
+  <text class="concept-text" x="280" y="340">Alta</text>
+  <rect x="340" y="330" width="15" height="10" fill="#00D4FF" opacity="1"/>
+  <text class="concept-text" x="360" y="340">Muito Alta</text>
+  
+  <!-- Explanation box -->
+  <rect x="450" y="300" width="320" height="120" fill="#1A1A2E" stroke="#404050" stroke-width="1" rx="5"/>
+  <text class="concept-text" x="470" y="320">Exemplo: "gato" presta atenção a:</text>
+  <text class="concept-text" x="470" y="340">• "bebeu" (ação do gato) - Atenção ALTA</text>
+  <text class="concept-text" x="470" y="360">• "sede" (motivo da ação) - Atenção ALTA</text>
+  <text class="concept-text" x="470" y="380">• "leite" (objeto da ação) - Atenção MÉDIA</text>
+  <text class="concept-text" x="470" y="400">• Outras palavras - Atenção BAIXA</text>
+  
+  <!-- Bottom explanation -->
+  <text class="concept-text" x="400" y="460" text-anchor="middle">O mecanismo de atenção permite que cada palavra identifique</text>
+  <text class="concept-text" x="400" y="480" text-anchor="middle">automaticamente quais outras palavras são mais relevantes para seu contexto</text>
+</svg>

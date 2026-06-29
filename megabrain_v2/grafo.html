@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mega Brain v2 — Grafo LangGraph</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0A0A0F;
+    --card: #14141F;
+    --border: #2A2A4A;
+    --cyan: #00D4FF;
+    --green: #00FF88;
+    --gold: #FFD700;
+    --purple: #7C5CFC;
+    --text: #E8E8F0;
+    --muted: #6A6A8A;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    text-align: center;
+    padding: 40px 20px 20px;
+    position: relative;
+  }
+  header::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.05), transparent 70%);
+    pointer-events: none;
+  }
+  header h1 {
+    font-size: clamp(24px, 4vw, 42px);
+    font-weight: 800;
+    background: linear-gradient(135deg, #00D4FF, #7C5CFC);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 15px;
+    margin-top: 6px;
+  }
+
+  main {
+    flex: 1;
+    display: flex;
+    gap: 24px;
+    padding: 20px 40px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .graph-panel {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+  }
+  .graph-panel h2 {
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .mermaid {
+    width: 100%;
+    max-width: 700px;
+  }
+  .mermaid svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .legend {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    width: 320px;
+    flex-shrink: 0;
+  }
+  .legend h2 {
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .legend-dot {
+    width: 14px; height: 14px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .legend-dot.cyan { background: #00D4FF; }
+  .legend-dot.green { background: #00FF88; }
+  .legend-dot.gold { background: #FFD700; }
+  .legend-dot.purple { background: #7C5CFC; }
+  .legend-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .legend-desc {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .status-bar {
+    background: #0D0D1A;
+    border-top: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    gap: 24px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: monospace;
+  }
+  .status-bar span { color: var(--green); }
+  .status-bar .warn { color: var(--gold); }
+
+  #exec-log {
+    background: #0D0D1A;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin: 0 40px 20px;
+    padding: 16px 20px;
+    max-height: 180px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 12px;
+  }
+  #exec-log .entry {
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+  }
+  #exec-log .entry.squad { color: var(--gold); }
+  #exec-log .entry.route { color: var(--cyan); }
+  #exec-log .entry.error { color: #FF3355; }
+
+  @media (max-width: 900px) {
+    main { flex-direction: column; padding: 20px; }
+    .legend { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Mega Brain v2 — Grafo LangGraph</h1>
+  <p>StateGraph com roteamento condicional e squad de agentes</p>
+</header>
+
+<main>
+  <div class="graph-panel">
+    <h2>Diagrama do Grafo</h2>
+    <div class="mermaid">
+graph TD
+    __start__(["🏁 START"]):::first
+
+    classify["🔍 classify<br/><small>analisa texto</small>"]:::classify
+
+    respond["💬 respond<br/><small>gemini / gpt-4o / claude</small>"]:::respond
+
+    squad["⚔️ squad<br/><small>4 agentes em paralelo</small>"]:::squad
+
+    __end__(["✅ END"]):::last
+
+    __start__ --> classify
+
+    classify -. "fast · standard · premium" .-> respond
+    classify ==>|"mega brain · squad"| squad
+
+    respond --> __end__
+    squad --> __end__
+
+    classDef default fill:#1A1A2E,stroke:#2A2A4A,color:#E8E8F0,font-family:Inter
+    classDef first fill:#0D0D1A,stroke:#7C5CFC,stroke-width:2,color:#7C5CFC,font-weight:bold
+    classDef last fill:#0D0D1A,stroke:#00FF88,stroke-width:2,color:#00FF88,font-weight:bold
+    classDef classify fill:#14142A,stroke:#00D4FF,stroke-width:2,color:#00D4FF,font-weight:bold
+    classDef respond fill:#14142A,stroke:#00FF88,stroke-width:2,color:#00FF88,font-weight:bold
+    classDef squad fill:#14142A,stroke:#FFD700,stroke-width:2,color:#FFD700,font-weight:bold
+
+    linkStyle 0 stroke:#6A6A8A,stroke-width:2
+    linkStyle 1 stroke:#00FF88,stroke-width:1.5,stroke-dasharray:5
+    linkStyle 2 stroke:#FFD700,stroke-width:2.5
+    linkStyle 3 stroke:#00FF88,stroke-width:2
+    linkStyle 4 stroke:#FFD700,stroke-width:2
+    </div>
+  </div>
+
+  <div class="legend">
+    <h2>Legenda</h2>
+    <div class="legend-item">
+      <div class="legend-dot cyan"></div>
+      <div>
+        <div class="legend-label">classify</div>
+        <div class="legend-desc">Classifica por keywords e complexidade</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot green"></div>
+      <div>
+        <div class="legend-label">respond</div>
+        <div class="legend-desc">fast → Gemini · standard → GPT-4o · premium → Claude</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot gold"></div>
+      <div>
+        <div class="legend-label">squad</div>
+        <div class="legend-desc">4 agentes (copywriter, strategist, social, SEO) em paralelo + Copy Chief consolida</div>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot purple"></div>
+      <div>
+        <div class="legend-label">START / END</div>
+        <div class="legend-desc">Entrada e saída do grafo</div>
+      </div>
+    </div>
+    <div class="legend-item" style="border:none;">
+      <div style="font-size:12px; color: var(--muted); margin-top:8px;">
+        ┅┅┅ aresta condicional<br>
+        ═══ aresta fixa
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="exec-log">
+  <div class="entry route">⚡ Servidor rodando em http://localhost:8701</div>
+  <div class="entry">📊 API: POST /api/process → executa o grafo</div>
+  <div class="entry">💡 Teste: curl -X POST :8701/api/process -d '{"text":"mega brain: crie uma campanha"}'</div>
+</div>
+
+<div class="status-bar">
+  <div>v1 J.A.R.V.I.S.: <span>localhost:8700</span></div>
+  <div>v2 LangGraph: <span>localhost:8701</span></div>
+  <div>Grafo: <span>5 nós</span></div>
+  <div>Checkpoint: <span>MemorySaver</span></div>
+</div>
+
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  securityLevel: 'loose',
+  themeVariables: {
+    primaryColor: '#1A1A2E',
+    primaryTextColor: '#E8E8F0',
+    lineColor: '#2A2A4A',
+  }
+});
+</script>
+
+</body>
+</html>
